@@ -81,7 +81,7 @@ type Plan struct {
 type Route struct {
 	ID           int64     `json:"id" db:"id"`
 	PlanID       int64     `json:"plan_id" db:"plan_id"`
-	VehicleID    int64     `json:"vehicle_id" db:"vehicle_id"`
+	VehicleID    *int64    `json:"vehicle_id" db:"vehicle_id"`
 	Day          int       `json:"day" db:"day"`
 	Date         time.Time `json:"date" db:"date"`
 	TotalDistance float64  `json:"total_distance" db:"total_distance"`

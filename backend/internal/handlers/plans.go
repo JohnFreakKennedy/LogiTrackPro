@@ -242,21 +242,30 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 	// Call optimizer
 	optResp, err := h.optimizer.Optimize(optReq)
 	if err != nil {
-		database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
-		errorResponse(c, http.StatusInternalServerError, "Optimization failed: "+err.Error())
+		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+			errorResponse(c, http.StatusInternalServerError, "Optimization failed: "+err.Error()+". Revert failed: "+revertErr.Error())
+		} else {
+			errorResponse(c, http.StatusInternalServerError, "Optimization failed: "+err.Error())
+		}
 		return
 	}
 
 	if !optResp.Success {
-		database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
-		errorResponse(c, http.StatusInternalServerError, "Optimization failed: "+optResp.Message)
+		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+			errorResponse(c, http.StatusInternalServerError, "Optimization failed: "+optResp.Message+". Revert failed: "+revertErr.Error())
+		} else {
+			errorResponse(c, http.StatusInternalServerError, "Optimization failed: "+optResp.Message)
+		}
 		return
 	}
 
 	// Delete existing routes
 	if err := database.DeleteRoutesByPlan(h.db, id); err != nil {
-		database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
-		errorResponse(c, http.StatusInternalServerError, "Failed to clear existing routes: "+err.Error())
+		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+			errorResponse(c, http.StatusInternalServerError, "Failed to clear routes: "+err.Error()+". Revert failed: "+revertErr.Error())
+		} else {
+			errorResponse(c, http.StatusInternalServerError, "Failed to clear existing routes: "+err.Error())
+		}
 		return
 	}
 
@@ -264,13 +273,21 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 	for _, routeResult := range optResp.Routes {
 		routeDate, err := time.Parse("2006-01-02", routeResult.Date)
 		if err != nil {
-			database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
-			errorResponse(c, http.StatusInternalServerError, "Failed to parse route date: "+err.Error())
+			if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+				errorResponse(c, http.StatusInternalServerError, "Invalid date: "+err.Error()+". Revert failed: "+revertErr.Error())
+			} else {
+				errorResponse(c, http.StatusInternalServerError, "Failed to parse route date: "+err.Error())
+			}
 			return
+		}
+		var vehicleID *int64
+		if routeResult.VehicleID != 0 {
+			vID := routeResult.VehicleID
+			vehicleID = &vID
 		}
 		route := &models.Route{
 			PlanID:        id,
-			VehicleID:     routeResult.VehicleID,
+			VehicleID:     vehicleID,
 			Day:           routeResult.Day,
 			Date:          routeDate,
 			TotalDistance: routeResult.TotalDistance,
@@ -279,8 +296,11 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 		}
 
 		if err := database.CreateRoute(h.db, route); err != nil {
-			database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
-			errorResponse(c, http.StatusInternalServerError, "Failed to save route: "+err.Error())
+			if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+				errorResponse(c, http.StatusInternalServerError, "Failed to save route: "+err.Error()+". Revert failed: "+revertErr.Error())
+			} else {
+				errorResponse(c, http.StatusInternalServerError, "Failed to save route: "+err.Error())
+			}
 			return
 		}
 
@@ -294,8 +314,11 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 				ArrivalTime: stopResult.ArrivalTime,
 			}
 			if err := database.CreateStop(h.db, stop); err != nil {
-				database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
-				errorResponse(c, http.StatusInternalServerError, "Failed to save stop: "+err.Error())
+				if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+					errorResponse(c, http.StatusInternalServerError, "Failed to save stop: "+err.Error()+". Revert failed: "+revertErr.Error())
+				} else {
+					errorResponse(c, http.StatusInternalServerError, "Failed to save stop: "+err.Error())
+				}
 				return
 			}
 		}

@@ -25,9 +25,8 @@ func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 	for rows.Next() {
 		var r models.Route
 		var v models.Vehicle
-		var vehicleID sql.NullInt64
 		err := rows.Scan(
-			&r.ID, &r.PlanID, &vehicleID, &r.Day, &r.Date,
+			&r.ID, &r.PlanID, &r.VehicleID, &r.Day, &r.Date,
 			&r.TotalDistance, &r.TotalCost, &r.TotalLoad, &r.CreatedAt,
 			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost, &v.MaxDistance,
 			&v.Available, &v.WarehouseID, &v.CreatedAt, &v.UpdatedAt,
@@ -35,8 +34,7 @@ func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 		if err != nil {
 			return nil, err
 		}
-		if vehicleID.Valid {
-			r.VehicleID = vehicleID.Int64
+		if r.VehicleID != nil {
 			r.Vehicle = &v
 		}
 		routes = append(routes, r)
@@ -55,16 +53,11 @@ func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 }
 
 func CreateRoute(db *sql.DB, r *models.Route) error {
-	var vehicleID interface{} = nil
-	if r.VehicleID > 0 {
-		vehicleID = r.VehicleID
-	}
-
 	query := `INSERT INTO routes (plan_id, vehicle_id, day, date, total_distance, total_cost, total_load) 
 			  VALUES ($1, $2, $3, $4, $5, $6, $7) 
 			  RETURNING id, created_at`
 
-	return db.QueryRow(query, r.PlanID, vehicleID, r.Day, r.Date,
+	return db.QueryRow(query, r.PlanID, r.VehicleID, r.Day, r.Date,
 		r.TotalDistance, r.TotalCost, r.TotalLoad).Scan(&r.ID, &r.CreatedAt)
 }
 
