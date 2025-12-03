@@ -185,15 +185,13 @@ class IRPSolver:
                 for cid in route_customers:
                     unassigned.discard(cid)
                 
+                # Apply 2-opt improvement
+                route_customers = self._improve_route_2opt(route_customers)
+                
                 # Calculate route metrics
                 route_distance = self._calculate_route_distance(route_customers)
                 route_cost = vehicle.fixed_cost + (route_distance * vehicle.cost_per_km)
-                total_load = sum(deliveries.values())
-                
-                # Apply 2-opt improvement
-                route_customers = self._improve_route_2opt(route_customers)
-                route_distance = self._calculate_route_distance(route_customers)
-                route_cost = vehicle.fixed_cost + (route_distance * vehicle.cost_per_km)
+                total_load = sum(deliveries[cid] for cid in route_customers)
                 
                 # Create stops
                 stops = []
