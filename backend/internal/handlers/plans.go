@@ -234,7 +234,10 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 	}
 
 	// Update plan status
-	database.UpdatePlanStatus(h.db, id, "optimizing", 0, 0)
+	if err := database.UpdatePlanStatus(h.db, id, "optimizing", 0, 0); err != nil {
+		errorResponse(c, http.StatusInternalServerError, "Failed to update plan status: "+err.Error())
+		return
+	}
 
 	// Call optimizer
 	optResp, err := h.optimizer.Optimize(optReq)
