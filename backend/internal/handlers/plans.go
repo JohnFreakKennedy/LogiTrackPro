@@ -275,7 +275,9 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 		}
 
 		if err := database.CreateRoute(h.db, route); err != nil {
-			continue
+			database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
+			errorResponse(c, http.StatusInternalServerError, "Failed to save route: "+err.Error())
+			return
 		}
 
 		// Save stops
@@ -287,16 +289,32 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 				Quantity:    stopResult.Quantity,
 				ArrivalTime: stopResult.ArrivalTime,
 			}
-			database.CreateStop(h.db, stop)
+			if err := database.CreateStop(h.db, stop); err != nil {
+				database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
+				errorResponse(c, http.StatusInternalServerError, "Failed to save stop: "+err.Error())
+				return
+			}
 		}
 	}
 
 	// Update plan status
-	database.UpdatePlanStatus(h.db, id, "optimized", optResp.TotalCost, optResp.TotalDistance)
+	if err := database.UpdatePlanStatus(h.db, id, "optimized", optResp.TotalCost, optResp.TotalDistance); err != nil {
+		errorResponse(c, http.StatusInternalServerError, "Failed to update plan status: "+err.Error())
+		return
+	}
 
 	// Get updated plan with routes
-	plan, _ = database.GetPlan(h.db, id)
-	routes, _ := database.GetRoutesByPlan(h.db, id)
+	plan, err = database.GetPlan(h.db, id)
+	if err != nil {
+		errorResponse(c, http.StatusInternalServerError, "Failed to fetch updated plan: "+err.Error())
+		return
+	}
+
+	routes, err := database.GetRoutesByPlan(h.db, id)
+	if err != nil {
+		errorResponse(c, http.StatusInternalServerError, "Failed to fetch updated routes: "+err.Error())
+		return
+	}
 	plan.Routes = routes
 
 	successResponse(c, plan)
