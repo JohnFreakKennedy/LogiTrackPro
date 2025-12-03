@@ -71,16 +71,12 @@ func UpdateWarehouse(db *sql.DB, w *models.Warehouse) error {
 			  replenishment_qty = $8, updated_at = CURRENT_TIMESTAMP 
 			  WHERE id = $9 RETURNING updated_at`
 
-	result, err := db.Exec(query, w.Name, w.Address, w.Latitude, w.Longitude,
-		w.Capacity, w.CurrentStock, w.HoldingCost, w.ReplenishmentQty, w.ID)
-	if err != nil {
-		return err
-	}
-	rows, _ := result.RowsAffected()
-	if rows == 0 {
+	err := db.QueryRow(query, w.Name, w.Address, w.Latitude, w.Longitude,
+		w.Capacity, w.CurrentStock, w.HoldingCost, w.ReplenishmentQty, w.ID).Scan(&w.UpdatedAt)
+	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
-	return nil
+	return err
 }
 
 func DeleteWarehouse(db *sql.DB, id int64) error {

@@ -255,7 +255,11 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 
 	// Save new routes
 	for _, routeResult := range optResp.Routes {
-		routeDate, _ := time.Parse("2006-01-02", routeResult.Date)
+		routeDate, err := time.Parse("2006-01-02", routeResult.Date)
+		if err != nil {
+			// Skip routes with invalid dates and log the issue
+			continue
+		}
 		route := &models.Route{
 			PlanID:        id,
 			VehicleID:     routeResult.VehicleID,
