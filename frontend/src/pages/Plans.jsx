@@ -59,11 +59,18 @@ export default function Plans() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    const warehouseId = parseInt(formData.warehouse_id)
+    if (isNaN(warehouseId)) {
+      alert('Please select a warehouse')
+      return
+    }
+
     const data = {
       name: formData.name,
       start_date: formData.start_date,
       end_date: formData.end_date,
-      warehouse_id: parseInt(formData.warehouse_id),
+      warehouse_id: warehouseId,
     }
     
     try {

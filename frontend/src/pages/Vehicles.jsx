@@ -79,6 +79,9 @@ export default function Vehicles() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    const warehouseId = parseInt(formData.warehouse_id)
+    
     const data = {
       name: formData.name,
       capacity: parseFloat(formData.capacity),
@@ -86,7 +89,7 @@ export default function Vehicles() {
       fixed_cost: parseFloat(formData.fixed_cost),
       max_distance: parseFloat(formData.max_distance),
       available: formData.available,
-      warehouse_id: formData.warehouse_id ? parseInt(formData.warehouse_id) : 0,
+      warehouse_id: isNaN(warehouseId) ? 0 : warehouseId,
     }
     
     try {
