@@ -140,13 +140,20 @@ func setupRouter(h *handlers.Handler, cfg *config.Config) *gin.Engine {
 
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Whitelist of allowed origins
+		allowedOrigins := map[string]bool{
+			"http://localhost:3000": true,
+			"http://localhost:8080": true,
+		}
+
 		origin := c.Request.Header.Get("Origin")
-		if origin != "" {
+		if allowedOrigins[origin] {
 			c.Header("Access-Control-Allow-Origin", origin)
 			c.Header("Access-Control-Allow-Credentials", "true")
-		} else {
+		} else if origin == "" {
 			c.Header("Access-Control-Allow-Origin", "*")
 		}
+
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
 		c.Header("Access-Control-Expose-Headers", "Content-Length")
