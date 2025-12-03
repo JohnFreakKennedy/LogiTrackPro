@@ -261,8 +261,9 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 	for _, routeResult := range optResp.Routes {
 		routeDate, err := time.Parse("2006-01-02", routeResult.Date)
 		if err != nil {
-			// Skip routes with invalid dates and log the issue
-			continue
+			database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
+			errorResponse(c, http.StatusInternalServerError, "Failed to parse route date: "+err.Error())
+			return
 		}
 		route := &models.Route{
 			PlanID:        id,

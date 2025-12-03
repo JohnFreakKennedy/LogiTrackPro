@@ -14,7 +14,7 @@ func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 			  FROM routes r
 			  LEFT JOIN vehicles v ON r.vehicle_id = v.id
 			  WHERE r.plan_id = $1 ORDER BY r.day, r.id`
-	
+
 	rows, err := db.Query(query, planID)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 		err := rows.Scan(
 			&r.ID, &r.PlanID, &vehicleID, &r.Day, &r.Date,
 			&r.TotalDistance, &r.TotalCost, &r.TotalLoad, &r.CreatedAt,
-			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost, &v.MaxDistance, 
+			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost, &v.MaxDistance,
 			&v.Available, &v.WarehouseID, &v.CreatedAt, &v.UpdatedAt,
 		)
 		if err != nil {
@@ -59,11 +59,11 @@ func CreateRoute(db *sql.DB, r *models.Route) error {
 	if r.VehicleID > 0 {
 		vehicleID = r.VehicleID
 	}
-	
+
 	query := `INSERT INTO routes (plan_id, vehicle_id, day, date, total_distance, total_cost, total_load) 
 			  VALUES ($1, $2, $3, $4, $5, $6, $7) 
 			  RETURNING id, created_at`
-	
+
 	return db.QueryRow(query, r.PlanID, vehicleID, r.Day, r.Date,
 		r.TotalDistance, r.TotalCost, r.TotalLoad).Scan(&r.ID, &r.CreatedAt)
 }
@@ -80,7 +80,7 @@ func GetStopsByRoute(db *sql.DB, routeID int64) ([]models.Stop, error) {
 			  FROM stops s
 			  LEFT JOIN customers c ON s.customer_id = c.id
 			  WHERE s.route_id = $1 ORDER BY s.sequence`
-	
+
 	rows, err := db.Query(query, routeID)
 	if err != nil {
 		return nil, err
@@ -114,11 +114,11 @@ func CreateStop(db *sql.DB, s *models.Stop) error {
 	if s.CustomerID > 0 {
 		customerID = s.CustomerID
 	}
-	
+
 	query := `INSERT INTO stops (route_id, customer_id, sequence, quantity, arrival_time) 
 			  VALUES ($1, $2, $3, $4, $5) 
 			  RETURNING id, created_at`
-	
+
 	return db.QueryRow(query, s.RouteID, customerID, s.Sequence, s.Quantity,
 		s.ArrivalTime).Scan(&s.ID, &s.CreatedAt)
 }
@@ -134,4 +134,3 @@ func GetTotalDistanceAndCost(db *sql.DB) (float64, float64, error) {
 	err := db.QueryRow("SELECT COALESCE(SUM(total_distance), 0), COALESCE(SUM(total_cost), 0) FROM routes").Scan(&distance, &cost)
 	return distance, cost, err
 }
-
