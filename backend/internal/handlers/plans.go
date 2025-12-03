@@ -251,7 +251,11 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 	}
 
 	// Delete existing routes
-	database.DeleteRoutesByPlan(h.db, id)
+	if err := database.DeleteRoutesByPlan(h.db, id); err != nil {
+		database.UpdatePlanStatus(h.db, id, "draft", 0, 0)
+		errorResponse(c, http.StatusInternalServerError, "Failed to clear existing routes: "+err.Error())
+		return
+	}
 
 	// Save new routes
 	for _, routeResult := range optResp.Routes {
@@ -297,4 +301,3 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 
 	successResponse(c, plan)
 }
-
