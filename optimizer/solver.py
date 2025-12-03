@@ -125,6 +125,10 @@ class IRPSolver:
                 all_routes.append(route)
                 total_cost += route.total_cost
                 total_distance += route.total_distance
+                
+                # Apply deliveries for next day planning
+                for stop in route.stops:
+                    self.inventory[stop.customer_id] += stop.quantity
             
             # Update inventory levels
             self._update_inventory()
@@ -212,9 +216,6 @@ class IRPSolver:
                         arrival_time=current_time.strftime("%H:%M")
                     ))
                     
-                    # Update inventory for delivered customer
-                    self.inventory[cid] += deliveries[cid]
-                    
                     # Add service time (15 min per stop)
                     current_time += timedelta(minutes=15)
                     prev_loc = cid
@@ -243,6 +244,7 @@ class IRPSolver:
         remaining_capacity = vehicle.capacity
         remaining_distance = vehicle.max_distance if vehicle.max_distance > 0 else float('inf')
         current_location = 0  # warehouse
+        current_return_dist = 0
         
         available = set(candidates)
         
@@ -250,6 +252,7 @@ class IRPSolver:
             # Find nearest customer we can serve
             best_customer = None
             best_distance = float('inf')
+            best_cost_increase = float('inf')
             
             for cid in available:
                 customer = self.customers[cid]
@@ -269,9 +272,12 @@ class IRPSolver:
                 dist_to_customer = self.distance_matrix[(current_location, cid)]
                 dist_to_warehouse = self.distance_matrix[(cid, 0)]
                 
-                if dist_to_customer + dist_to_warehouse <= remaining_distance:
+                cost_increase = dist_to_customer + dist_to_warehouse - current_return_dist
+                
+                if cost_increase <= remaining_distance:
                     if dist_to_customer < best_distance:
                         best_distance = dist_to_customer
+                        best_cost_increase = cost_increase
                         best_customer = cid
             
             if best_customer is None:
@@ -287,8 +293,9 @@ class IRPSolver:
             route.append(best_customer)
             deliveries[best_customer] = delivery_qty
             remaining_capacity -= delivery_qty
-            remaining_distance -= best_distance
+            remaining_distance -= best_cost_increase
             current_location = best_customer
+            current_return_dist = self.distance_matrix[(best_customer, 0)]
             available.discard(best_customer)
         
         return route, deliveries
