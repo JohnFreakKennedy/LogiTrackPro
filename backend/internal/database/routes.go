@@ -9,7 +9,8 @@ import (
 func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 	query := `SELECT r.id, r.plan_id, r.vehicle_id, r.day, r.date, 
 			  r.total_distance, r.total_cost, r.total_load, r.created_at,
-			  v.id, v.name, v.capacity, v.cost_per_km, v.fixed_cost, v.max_distance, v.available
+			  v.id, v.name, v.capacity, v.cost_per_km, v.fixed_cost, v.max_distance, 
+			  v.available, COALESCE(v.warehouse_id, 0), v.created_at, v.updated_at
 			  FROM routes r
 			  LEFT JOIN vehicles v ON r.vehicle_id = v.id
 			  WHERE r.plan_id = $1 ORDER BY r.day, r.id`
@@ -28,7 +29,8 @@ func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 		err := rows.Scan(
 			&r.ID, &r.PlanID, &vehicleID, &r.Day, &r.Date,
 			&r.TotalDistance, &r.TotalCost, &r.TotalLoad, &r.CreatedAt,
-			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost, &v.MaxDistance, &v.Available,
+			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost, &v.MaxDistance, 
+			&v.Available, &v.WarehouseID, &v.CreatedAt, &v.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
