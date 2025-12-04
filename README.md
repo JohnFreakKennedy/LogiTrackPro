@@ -246,6 +246,37 @@ Migrations run automatically on backend startup. The schema includes:
 
 This project is developed for academic purposes as part of logistics optimization research.
 
+## MCP (Model Context Protocol) Setup
+
+LogiTrackPro includes MCP server configuration for enhanced AI assistance. MCPs provide structured access to project resources.
+
+### Quick Setup
+
+```bash
+# Run the setup script
+./scripts/setup-mcp.sh
+
+# Test the configuration
+./scripts/test-mcp.sh
+```
+
+### Available MCP Servers
+
+- **PostgreSQL MCP**: Database operations and queries
+- **Filesystem MCP**: File operations and navigation
+- **Git MCP**: Version control operations
+- **Docker MCP**: Container management
+- **Brave Search MCP**: Web search (optional, requires API key)
+
+### Helper Scripts
+
+- `scripts/db-helper.sh`: Database operations (backup, restore, stats)
+- `scripts/docker-helper.sh`: Docker Compose management
+- `scripts/setup-mcp.sh`: MCP configuration setup
+- `scripts/test-mcp.sh`: Verify MCP server connectivity
+
+For detailed MCP documentation, see [MCP_SETUP.md](./MCP_SETUP.md).
+
 ## Contributing
 
 1. Fork the repository
