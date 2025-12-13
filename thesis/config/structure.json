@@ -1,0 +1,455 @@
+{
+    "title": "Інформаційна система керування логістичними процесами",
+    "minPages": 120,
+    "chapters": [
+      {
+        "id": 0,
+        "title": "ВСТУП",
+        "targetPages": 7,
+        "sections": [
+          {
+            "code": "0.1",
+            "title": "Актуальність теми та проблематики транспортної логістики й IRP",
+            "role": "intro_relevance",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "0.2",
+            "title": "Мета та завдання магістерської роботи",
+            "role": "intro_goal_tasks",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "0.3",
+            "title": "Об’єкт і предмет дослідження",
+            "role": "intro_object_subject",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "0.4",
+            "title": "Практичне значення отриманих результатів",
+            "role": "intro_practical_value",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "0.5",
+            "title": "Наукова новизна та положення, що виносяться на захист",
+            "role": "intro_novelty_contributions",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "0.6",
+            "title": "Апробація результатів та публікації",
+            "role": "intro_approval_publications",
+            "targetPages": 0.5,
+            "minChars": 1250
+          },
+          {
+            "code": "0.7",
+            "title": "Структура магістерської роботи",
+            "role": "intro_structure",
+            "targetPages": 0.5,
+            "minChars": 1250
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "title": "АНАЛІЗ ПРЕДМЕТНОЇ ОБЛАСТІ ТРАНСПОРТНОЇ ЛОГІСТИКИ ТА ЗАДАЧІ IRP",
+        "targetPages": 18,
+        "sections": [
+          {
+            "code": "1.1",
+            "title": "Аналіз процесів та викликів транспортної логістики",
+            "role": "domain_processes",
+            "targetPages": 8,
+            "minChars": 20000
+          },
+          {
+            "code": "1.2",
+            "title": "Формалізація задачі Inventory Routing Problem",
+            "role": "irp_formulation",
+            "targetPages": 6,
+            "minChars": 15000
+          },
+          {
+            "code": "1.3",
+            "title": "Аналіз зацікавлених сторін та їх ролей у логістичній системі",
+            "role": "stakeholders_analysis",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "1.4",
+            "title": "Висновки до розділу 1",
+            "role": "chapter_conclusions",
+            "targetPages": 2,
+            "minChars": 5000
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "targetPages": 16,
+        "sections": [
+          {
+            "code": "2.1",
+            "title": "Огляд платформ керування доставкою та маршрутами",
+            "role": "solutions_overview",
+            "targetPages": 8,
+            "minChars": 20000
+          },
+          {
+            "code": "2.2",
+            "title": "Характеристики платформи Tookan",
+            "role": "solution_tookan",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "2.3",
+            "title": "Характеристики платформи Onfleet",
+            "role": "solution_onfleet",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "2.4",
+            "title": "Характеристики платформ OptimoRoute, Routific, Locus",
+            "role": "solution_other_platforms",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "2.5",
+            "title": "Порівняльний аналіз рішень та критерії оцінювання",
+            "role": "solutions_comparison",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "2.6",
+            "title": "Обґрунтування доцільності та унікальності розробки LogiTrackPro",
+            "role": "solution_uniqueness",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "2.7",
+            "title": "Висновки до розділу 2",
+            "role": "chapter_conclusions",
+            "targetPages": 0.5,
+            "minChars": 1250
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "ФОРМУВАННЯ ВИМОГ ДО ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "targetPages": 16,
+        "sections": [
+          {
+            "code": "3.1",
+            "title": "Вимоги до системи в цілому",
+            "role": "requirements_overall",
+            "targetPages": 4,
+            "minChars": 10000
+          },
+          {
+            "code": "3.2",
+            "title": "Функціональні вимоги (FR)",
+            "role": "requirements_fr",
+            "targetPages": 6,
+            "minChars": 15000
+          },
+          {
+            "code": "3.3",
+            "title": "Нефункціональні вимоги (NFR)",
+            "role": "requirements_nfr",
+            "targetPages": 4,
+            "minChars": 10000
+          },
+          {
+            "code": "3.4",
+            "title": "Обмеження, припущення та умови експлуатації системи",
+            "role": "requirements_constraints",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "3.5",
+            "title": "Висновки до розділу 3",
+            "role": "chapter_conclusions",
+            "targetPages": 1,
+            "minChars": 2500
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "ПРОЄКТУВАННЯ ТА АРХІТЕКТУРА ІНФОРМАЦІЙНОЇ СИСТЕМИ LogiTrackPro",
+        "targetPages": 18,
+        "sections": [
+          {
+            "code": "4.1",
+            "title": "Вибір архітектурного стилю та стеку технологій",
+            "role": "architecture_stack_choice",
+            "targetPages": 4,
+            "minChars": 10000
+          },
+          {
+            "code": "4.2",
+            "title": "Структурна схема системи та її підсистеми",
+            "role": "architecture_structural",
+            "targetPages": 4,
+            "minChars": 10000
+          },
+          {
+            "code": "4.3",
+            "title": "Сценарії використання системи (Use Case діаграми)",
+            "role": "architecture_use_cases",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "4.4",
+            "title": "Модель даних та ER-діаграма",
+            "role": "architecture_data_model",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "4.5",
+            "title": "Інтеграція з зовнішніми сервісами та інтерфейси API",
+            "role": "architecture_integration_api",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "4.6",
+            "title": "Висновки до розділу 4",
+            "role": "chapter_conclusions",
+            "targetPages": 2,
+            "minChars": 5000
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "targetPages": 22,
+        "sections": [
+          {
+            "code": "5.1",
+            "title": "Реалізація серверної частини на Go (API та мікросервіси)",
+            "role": "implementation_backend",
+            "targetPages": 4,
+            "minChars": 10000
+          },
+          {
+            "code": "5.2",
+            "title": "Математичне забезпечення алгоритмів IRP у системі LogiTrackPro",
+            "role": "implementation_math_support",
+            "targetPages": 5,
+            "minChars": 13000
+          },
+          {
+            "code": "5.3",
+            "title": "Реалізація алгоритмічного модуля IRP на Python",
+            "role": "implementation_irp_module",
+            "targetPages": 4,
+            "minChars": 10000
+          },
+          {
+            "code": "5.4",
+            "title": "Реалізація клієнтського інтерфейсу на React",
+            "role": "implementation_frontend",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "5.5",
+            "title": "Інфраструктура, деплоймент та конфігурація середовища",
+            "role": "implementation_infrastructure",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "5.6",
+            "title": "Механізми безпеки, логування та моніторингу",
+            "role": "implementation_security_logging",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "5.7",
+            "title": "Висновки до розділу 5",
+            "role": "chapter_conclusions",
+            "targetPages": 1,
+            "minChars": 2500
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "ТЕСТУВАННЯ, ЕКСПЕРИМЕНТИ ТА ОЦІНКА ЯКОСТІ РІШЕНЬ IRP",
+        "targetPages": 14,
+        "sections": [
+          {
+            "code": "6.1",
+            "title": "Підхід до тестування та методологія валідації",
+            "role": "testing_approach",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "6.2",
+            "title": "Функціональне тестування компонентів системи",
+            "role": "testing_functional",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "6.3",
+            "title": "Навантажувальне тестування та оцінка продуктивності",
+            "role": "testing_performance",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "6.4",
+            "title": "Постановка експериментів для IRP та опис тестових сценаріїв",
+            "role": "experiments_setup",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "6.5",
+            "title": "Аналіз результатів експериментів та порівняння сценаріїв",
+            "role": "experiments_analysis",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "6.6",
+            "title": "Висновки до розділу 6",
+            "role": "chapter_conclusions",
+            "targetPages": 1,
+            "minChars": 2500
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "РОЗРОБЛЕННЯ СТАРТАП-ПРОЄКТУ НА ОСНОВІ СИСТЕМИ LogiTrackPro",
+        "targetPages": 10,
+        "sections": [
+          {
+            "code": "7.1",
+            "title": "Опис ідеї стартап-проєкту LogiTrackPro",
+            "role": "startup_idea",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "7.2",
+            "title": "Аналіз ринку, цільових сегментів та конкурентів",
+            "role": "startup_market_analysis",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "7.3",
+            "title": "Бізнес-модель та стратегія монетизації",
+            "role": "startup_business_model",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "7.4",
+            "title": "Маркетингова стратегія та канали залучення клієнтів",
+            "role": "startup_marketing",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "7.5",
+            "title": "План розвитку продукту та дорожня карта",
+            "role": "startup_roadmap",
+            "targetPages": 1,
+            "minChars": 2500
+          },
+          {
+            "code": "7.6",
+            "title": "Висновки до розділу 7",
+            "role": "chapter_conclusions",
+            "targetPages": 0.5,
+            "minChars": 1250
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "ВИСНОВКИ",
+        "targetPages": 4,
+        "sections": [
+          {
+            "code": "8.1",
+            "title": "Загальні висновки за результатами дослідження",
+            "role": "global_conclusions",
+            "targetPages": 3,
+            "minChars": 7500
+          },
+          {
+            "code": "8.2",
+            "title": "Перспективи подальших досліджень та розвитку системи",
+            "role": "future_work",
+            "targetPages": 1,
+            "minChars": 2500
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "ДОДАТКИ",
+        "targetPages": 7,
+        "sections": [
+          {
+            "code": "9.1",
+            "title": "Інструкція користувача інформаційної системи",
+            "role": "appendix_user_manual",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "9.2",
+            "title": "Специфікація API та формати обміну даними",
+            "role": "appendix_api_spec",
+            "targetPages": 2,
+            "minChars": 5000
+          },
+          {
+            "code": "9.3",
+            "title": "Приклади вхідних даних IRP та результатів оптимізації",
+            "role": "appendix_irp_examples",
+            "targetPages": 1.5,
+            "minChars": 3750
+          },
+          {
+            "code": "9.4",
+            "title": "Опис та параметри n8n-workflow для генерації дисертації",
+            "role": "appendix_n8n_workflow",
+            "targetPages": 1.5,
+            "minChars": 3750
+          }
+        ]
+      }
+    ]
+  }
+  
