@@ -29,7 +29,10 @@ services:
       PORT: "8080"
       DATABASE_URL: "postgres://postgres:postgres@postgres:5432/logitrackpro?sslmode=disable"
       OPTIMIZER_URL: "http://optimizer:8000"
-      JWT_SECRET: "your-secure-jwt-secret-change-in-production"
+      # JWT_SECRET must be set via .env file or environment variable
+      # Create a .env file in the project root with: JWT_SECRET=your-secure-random-secret-here
+      # Never commit .env files to git (they are in .gitignore)
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8080:8080"
     depends_on:
