@@ -259,8 +259,20 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 		return
 	}
 
+	// Begin transaction for atomic route creation
+	tx, err := h.db.Begin()
+	if err != nil {
+		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+			errorResponse(c, http.StatusInternalServerError, "Failed to begin transaction: "+err.Error()+". Revert failed: "+revertErr.Error())
+		} else {
+			errorResponse(c, http.StatusInternalServerError, "Failed to begin transaction: "+err.Error())
+		}
+		return
+	}
+
 	// Delete existing routes
-	if err := database.DeleteRoutesByPlan(h.db, id); err != nil {
+	if err := database.DeleteRoutesByPlanTx(tx, id); err != nil {
+		tx.Rollback()
 		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
 			errorResponse(c, http.StatusInternalServerError, "Failed to clear routes: "+err.Error()+". Revert failed: "+revertErr.Error())
 		} else {
@@ -273,6 +285,7 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 	for _, routeResult := range optResp.Routes {
 		routeDate, err := time.Parse("2006-01-02", routeResult.Date)
 		if err != nil {
+			tx.Rollback()
 			if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
 				errorResponse(c, http.StatusInternalServerError, "Invalid date: "+err.Error()+". Revert failed: "+revertErr.Error())
 			} else {
@@ -295,7 +308,8 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 			TotalLoad:     routeResult.TotalLoad,
 		}
 
-		if err := database.CreateRoute(h.db, route); err != nil {
+		if err := database.CreateRouteTx(tx, route); err != nil {
+			tx.Rollback()
 			if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
 				errorResponse(c, http.StatusInternalServerError, "Failed to save route: "+err.Error()+". Revert failed: "+revertErr.Error())
 			} else {
@@ -313,7 +327,8 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 				Quantity:    stopResult.Quantity,
 				ArrivalTime: stopResult.ArrivalTime,
 			}
-			if err := database.CreateStop(h.db, stop); err != nil {
+			if err := database.CreateStopTx(tx, stop); err != nil {
+				tx.Rollback()
 				if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
 					errorResponse(c, http.StatusInternalServerError, "Failed to save stop: "+err.Error()+". Revert failed: "+revertErr.Error())
 				} else {
@@ -324,9 +339,25 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 		}
 	}
 
-	// Update plan status
-	if err := database.UpdatePlanStatus(h.db, id, "optimized", optResp.TotalCost, optResp.TotalDistance); err != nil {
-		errorResponse(c, http.StatusInternalServerError, "Failed to update plan status: "+err.Error())
+	// Update plan status within transaction
+	if err := database.UpdatePlanStatusTx(tx, id, "optimized", optResp.TotalCost, optResp.TotalDistance); err != nil {
+		tx.Rollback()
+		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+			errorResponse(c, http.StatusInternalServerError, "Failed to update plan status: "+err.Error()+". Revert failed: "+revertErr.Error())
+		} else {
+			errorResponse(c, http.StatusInternalServerError, "Failed to update plan status: "+err.Error())
+		}
+		return
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
+			errorResponse(c, http.StatusInternalServerError, "Failed to commit transaction: "+err.Error()+". Revert failed: "+revertErr.Error())
+		} else {
+			errorResponse(c, http.StatusInternalServerError, "Failed to commit transaction: "+err.Error())
+		}
 		return
 	}
 

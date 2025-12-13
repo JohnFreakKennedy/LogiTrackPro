@@ -85,6 +85,21 @@ func UpdatePlanStatus(db *sql.DB, id int64, status string, totalCost, totalDista
 	return nil
 }
 
+func UpdatePlanStatusTx(tx *sql.Tx, id int64, status string, totalCost, totalDistance float64) error {
+	query := `UPDATE plans SET status = $1, total_cost = $2, total_distance = $3, 
+			  updated_at = CURRENT_TIMESTAMP WHERE id = $4`
+	
+	result, err := tx.Exec(query, status, totalCost, totalDistance, id)
+	if err != nil {
+		return err
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
 func DeletePlan(db *sql.DB, id int64) error {
 	result, err := db.Exec("DELETE FROM plans WHERE id = $1", id)
 	if err != nil {

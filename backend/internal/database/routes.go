@@ -24,19 +24,50 @@ func GetRoutesByPlan(db *sql.DB, planID int64) ([]models.Route, error) {
 	var routes []models.Route
 	for rows.Next() {
 		var r models.Route
-		var v models.Vehicle
+		var vehicleID sql.NullInt64
+		var vID sql.NullInt64
+		var vName sql.NullString
+		var vCapacity sql.NullFloat64
+		var vCostPerKm sql.NullFloat64
+		var vFixedCost sql.NullFloat64
+		var vMaxDistance sql.NullFloat64
+		var vAvailable sql.NullBool
+		var vWarehouseID sql.NullInt64
+		var vCreatedAt sql.NullTime
+		var vUpdatedAt sql.NullTime
+
 		err := rows.Scan(
-			&r.ID, &r.PlanID, &r.VehicleID, &r.Day, &r.Date,
+			&r.ID, &r.PlanID, &vehicleID, &r.Day, &r.Date,
 			&r.TotalDistance, &r.TotalCost, &r.TotalLoad, &r.CreatedAt,
-			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost, &v.MaxDistance,
-			&v.Available, &v.WarehouseID, &v.CreatedAt, &v.UpdatedAt,
+			&vID, &vName, &vCapacity, &vCostPerKm, &vFixedCost, &vMaxDistance,
+			&vAvailable, &vWarehouseID, &vCreatedAt, &vUpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
-		if r.VehicleID != nil {
-			r.Vehicle = &v
+
+		// Set VehicleID pointer
+		if vehicleID.Valid {
+			vIDVal := vehicleID.Int64
+			r.VehicleID = &vIDVal
 		}
+
+		// Set Vehicle if all vehicle fields are valid
+		if vID.Valid && vName.Valid {
+			r.Vehicle = &models.Vehicle{
+				ID:          vID.Int64,
+				Name:        vName.String,
+				Capacity:    vCapacity.Float64,
+				CostPerKm:   vCostPerKm.Float64,
+				FixedCost:   vFixedCost.Float64,
+				MaxDistance: vMaxDistance.Float64,
+				Available:   vAvailable.Bool,
+				WarehouseID: vWarehouseID.Int64,
+				CreatedAt:   vCreatedAt.Time,
+				UpdatedAt:   vUpdatedAt.Time,
+			}
+		}
+
 		routes = append(routes, r)
 	}
 
@@ -61,8 +92,22 @@ func CreateRoute(db *sql.DB, r *models.Route) error {
 		r.TotalDistance, r.TotalCost, r.TotalLoad).Scan(&r.ID, &r.CreatedAt)
 }
 
+func CreateRouteTx(tx *sql.Tx, r *models.Route) error {
+	query := `INSERT INTO routes (plan_id, vehicle_id, day, date, total_distance, total_cost, total_load) 
+			  VALUES ($1, $2, $3, $4, $5, $6, $7) 
+			  RETURNING id, created_at`
+
+	return tx.QueryRow(query, r.PlanID, r.VehicleID, r.Day, r.Date,
+		r.TotalDistance, r.TotalCost, r.TotalLoad).Scan(&r.ID, &r.CreatedAt)
+}
+
 func DeleteRoutesByPlan(db *sql.DB, planID int64) error {
 	_, err := db.Exec("DELETE FROM routes WHERE plan_id = $1", planID)
+	return err
+}
+
+func DeleteRoutesByPlanTx(tx *sql.Tx, planID int64) error {
+	_, err := tx.Exec("DELETE FROM routes WHERE plan_id = $1", planID)
 	return err
 }
 
@@ -83,20 +128,37 @@ func GetStopsByRoute(db *sql.DB, routeID int64) ([]models.Stop, error) {
 	var stops []models.Stop
 	for rows.Next() {
 		var s models.Stop
-		var c models.Customer
 		var customerID sql.NullInt64
+		var cID sql.NullInt64
+		var cName sql.NullString
+		var cAddress sql.NullString
+		var cLatitude sql.NullFloat64
+		var cLongitude sql.NullFloat64
+
 		err := rows.Scan(
 			&s.ID, &s.RouteID, &customerID, &s.Sequence, &s.Quantity,
 			&s.ArrivalTime, &s.CreatedAt,
-			&c.ID, &c.Name, &c.Address, &c.Latitude, &c.Longitude,
+			&cID, &cName, &cAddress, &cLatitude, &cLongitude,
 		)
 		if err != nil {
 			return nil, err
 		}
+
 		if customerID.Valid {
 			s.CustomerID = customerID.Int64
-			s.Customer = &c
 		}
+
+		// Set Customer if all customer fields are valid
+		if cID.Valid && cName.Valid {
+			s.Customer = &models.Customer{
+				ID:        cID.Int64,
+				Name:      cName.String,
+				Address:   cAddress.String,
+				Latitude:  cLatitude.Float64,
+				Longitude: cLongitude.Float64,
+			}
+		}
+
 		stops = append(stops, s)
 	}
 	return stops, nil
@@ -113,6 +175,20 @@ func CreateStop(db *sql.DB, s *models.Stop) error {
 			  RETURNING id, created_at`
 
 	return db.QueryRow(query, s.RouteID, customerID, s.Sequence, s.Quantity,
+		s.ArrivalTime).Scan(&s.ID, &s.CreatedAt)
+}
+
+func CreateStopTx(tx *sql.Tx, s *models.Stop) error {
+	var customerID interface{} = nil
+	if s.CustomerID > 0 {
+		customerID = s.CustomerID
+	}
+
+	query := `INSERT INTO stops (route_id, customer_id, sequence, quantity, arrival_time) 
+			  VALUES ($1, $2, $3, $4, $5) 
+			  RETURNING id, created_at`
+
+	return tx.QueryRow(query, s.RouteID, customerID, s.Sequence, s.Quantity,
 		s.ArrivalTime).Scan(&s.ID, &s.CreatedAt)
 }
 

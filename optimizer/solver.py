@@ -254,6 +254,9 @@ class IRPSolver:
             best_distance = float('inf')
             best_cost_increase = float('inf')
             
+            # Collect customers to remove (can't modify set during iteration)
+            to_remove = []
+            
             for cid in available:
                 customer = self.customers[cid]
                 
@@ -265,7 +268,7 @@ class IRPSolver:
                 )
                 
                 if delivery_qty <= 0:
-                    available.discard(cid)
+                    to_remove.append(cid)
                     continue
                 
                 # Check if we can reach customer and return to warehouse
@@ -279,6 +282,10 @@ class IRPSolver:
                         best_distance = dist_to_customer
                         best_cost_increase = cost_increase
                         best_customer = cid
+            
+            # Remove invalid customers after iteration
+            for cid in to_remove:
+                available.discard(cid)
             
             if best_customer is None:
                 break
