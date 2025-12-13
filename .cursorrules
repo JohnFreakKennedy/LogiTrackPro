@@ -1,0 +1,62 @@
+# LogiTrackPro Project Rules
+
+## Project Overview
+LogiTrackPro is a logistics planning platform solving the Inventory Routing Problem (IRP) with:
+- Go backend (Gin framework)
+- Python optimizer service (FastAPI)
+- React frontend (Vite + Tailwind)
+- PostgreSQL database
+
+## Code Style
+
+### Go Backend
+- Use `gofmt` for formatting
+- Follow Go naming conventions (exported: PascalCase, private: camelCase)
+- Error handling: always check and return errors explicitly
+- Use context for request cancellation
+- Database: use prepared statements, handle NULL values with pointers
+
+### Python Optimizer
+- Follow PEP 8 style guide
+- Use type hints (Pydantic models)
+- Async/await for I/O operations
+- Docstrings for public functions
+
+### React Frontend
+- Functional components with hooks
+- Use Tailwind CSS for styling
+- Axios for API calls
+- Framer Motion for animations
+- Component structure: pages/ and components/
+
+## Architecture Principles
+- Modular monolith backend
+- Microservice for optimization (Python)
+- RESTful API design
+- JWT authentication
+- Database migrations on startup
+
+## Testing
+- Backend: `go test ./...`
+- Optimizer: `pytest`
+- Frontend: `npm test`
+
+## Database
+- PostgreSQL 15
+- Migrations in `backend/internal/database/database.go`
+- Use transactions for multi-step operations
+- Handle NULL values properly (use pointers in Go)
+
+## Security
+- Never commit secrets (use .env files)
+- Validate all user inputs
+- Use parameterized queries (SQL injection prevention)
+- JWT tokens with expiration
+- CORS whitelist for production
+
+## Docker
+- Multi-stage builds for optimization
+- Health checks for services
+- Volume mounts for persistent data
+- Environment variables for configuration
+

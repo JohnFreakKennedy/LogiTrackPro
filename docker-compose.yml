@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: logitrackpro-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: logitrackpro
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Go Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: logitrackpro-backend
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/logitrackpro?sslmode=disable"
+      OPTIMIZER_URL: "http://optimizer:8000"
+      # JWT_SECRET must be set via .env file or environment variable
+      # Create a .env file in the project root with: JWT_SECRET=your-secure-random-secret-here
+      # Never commit .env files to git (they are in .gitignore)
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      optimizer:
+        condition: service_started
+
+  # Python Optimizer Service
+  optimizer:
+    build:
+      context: ./optimizer
+      dockerfile: Dockerfile
+    container_name: logitrackpro-optimizer
+    ports:
+      - "8000:8000"
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: logitrackpro-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+

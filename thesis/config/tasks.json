@@ -1,0 +1,536 @@
+{
+    "tasks": [
+      {
+        "chapter": 0,
+        "chapterTitle": "ВСТУП",
+        "sectionCode": "0.1",
+        "sectionTitle": "Актуальність теми та проблематики транспортної логістики й IRP",
+        "role": "intro_relevance",
+        "status": "todo",
+        "priority": 1
+      },
+      {
+        "chapter": 0,
+        "chapterTitle": "ВСТУП",
+        "sectionCode": "0.2",
+        "sectionTitle": "Мета та завдання магістерської роботи",
+        "role": "intro_goal_tasks",
+        "status": "todo",
+        "priority": 2
+      },
+      {
+        "chapter": 0,
+        "chapterTitle": "ВСТУП",
+        "sectionCode": "0.3",
+        "sectionTitle": "Об’єкт і предмет дослідження",
+        "role": "intro_object_subject",
+        "status": "todo",
+        "priority": 3
+      },
+      {
+        "chapter": 0,
+        "chapterTitle": "ВСТУП",
+        "sectionCode": "0.4",
+        "sectionTitle": "Практичне значення отриманих результатів",
+        "role": "intro_practical_value",
+        "status": "todo",
+        "priority": 4
+      },
+      {
+        "chapter": 0,
+        "chapterTitle": "ВСТУП",
+        "sectionCode": "0.5",
+        "sectionTitle": "Наукова новизна та положення, що виносяться на захист",
+        "role": "intro_novelty_contributions",
+        "status": "todo",
+        "priority": 5
+      },
+      {
+        "chapter": 0,
+        "chapterTitle": "ВСТУП",
+        "sectionCode": "0.6",
+        "sectionTitle": "Апробація результатів та публікації",
+        "role": "intro_approval_publications",
+        "status": "todo",
+        "priority": 6
+      },
+      {
+        "chapter": 0,
+        "chapterTitle": "ВСТУП",
+        "sectionCode": "0.7",
+        "sectionTitle": "Структура магістерської роботи",
+        "role": "intro_structure",
+        "status": "todo",
+        "priority": 7
+      },
+      {
+        "chapter": 1,
+        "chapterTitle": "АНАЛІЗ ПРЕДМЕТНОЇ ОБЛАСТІ ТРАНСПОРТНОЇ ЛОГІСТИКИ ТА ЗАДАЧІ IRP",
+        "sectionCode": "1.1",
+        "sectionTitle": "Аналіз процесів та викликів транспортної логістики",
+        "role": "domain_processes",
+        "status": "todo",
+        "priority": 8
+      },
+      {
+        "chapter": 1,
+        "chapterTitle": "АНАЛІЗ ПРЕДМЕТНОЇ ОБЛАСТІ ТРАНСПОРТНОЇ ЛОГІСТИКИ ТА ЗАДАЧІ IRP",
+        "sectionCode": "1.2",
+        "sectionTitle": "Формалізація задачі Inventory Routing Problem",
+        "role": "irp_formulation",
+        "status": "todo",
+        "priority": 9
+      },
+      {
+        "chapter": 1,
+        "chapterTitle": "АНАЛІЗ ПРЕДМЕТНОЇ ОБЛАСТІ ТРАНСПОРТНОЇ ЛОГІСТИКИ ТА ЗАДАЧІ IRP",
+        "sectionCode": "1.3",
+        "sectionTitle": "Аналіз зацікавлених сторін та їх ролей у логістичній системі",
+        "role": "stakeholders_analysis",
+        "status": "todo",
+        "priority": 10
+      },
+      {
+        "chapter": 1,
+        "chapterTitle": "АНАЛІЗ ПРЕДМЕТНОЇ ОБЛАСТІ ТРАНСПОРТНОЇ ЛОГІСТИКИ ТА ЗАДАЧІ IRP",
+        "sectionCode": "1.4",
+        "sectionTitle": "Висновки до розділу 1",
+        "role": "chapter_conclusions",
+        "status": "todo",
+        "priority": 11
+      },
+      {
+        "chapter": 2,
+        "chapterTitle": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "2.1",
+        "sectionTitle": "Огляд платформ керування доставкою та маршрутами",
+        "role": "solutions_overview",
+        "status": "todo",
+        "priority": 12
+      },
+      {
+        "chapter": 2,
+        "chapterTitle": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "2.2",
+        "sectionTitle": "Характеристики платформи Tookan",
+        "role": "solution_tookan",
+        "status": "todo",
+        "priority": 13
+      },
+      {
+        "chapter": 2,
+        "chapterTitle": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "2.3",
+        "sectionTitle": "Характеристики платформи Onfleet",
+        "role": "solution_onfleet",
+        "status": "todo",
+        "priority": 14
+      },
+      {
+        "chapter": 2,
+        "chapterTitle": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "2.4",
+        "sectionTitle": "Характеристики платформ OptimoRoute, Routific, Locus",
+        "role": "solution_other_platforms",
+        "status": "todo",
+        "priority": 15
+      },
+      {
+        "chapter": 2,
+        "chapterTitle": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "2.5",
+        "sectionTitle": "Порівняльний аналіз рішень та критерії оцінювання",
+        "role": "solutions_comparison",
+        "status": "todo",
+        "priority": 16
+      },
+      {
+        "chapter": 2,
+        "chapterTitle": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "2.6",
+        "sectionTitle": "Обґрунтування доцільності та унікальності розробки LogiTrackPro",
+        "role": "solution_uniqueness",
+        "status": "todo",
+        "priority": 17
+      },
+      {
+        "chapter": 2,
+        "chapterTitle": "ПОРІВНЯЛЬНИЙ АНАЛІЗ ІСНУЮЧИХ РІШЕНЬ ДЛЯ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "2.7",
+        "sectionTitle": "Висновки до розділу 2",
+        "role": "chapter_conclusions",
+        "status": "todo",
+        "priority": 18
+      },
+      {
+        "chapter": 3,
+        "chapterTitle": "ФОРМУВАННЯ ВИМОГ ДО ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "3.1",
+        "sectionTitle": "Вимоги до системи в цілому",
+        "role": "requirements_overall",
+        "status": "todo",
+        "priority": 19
+      },
+      {
+        "chapter": 3,
+        "chapterTitle": "ФОРМУВАННЯ ВИМОГ ДО ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "3.2",
+        "sectionTitle": "Функціональні вимоги (FR)",
+        "role": "requirements_fr",
+        "status": "todo",
+        "priority": 20
+      },
+      {
+        "chapter": 3,
+        "chapterTitle": "ФОРМУВАННЯ ВИМОГ ДО ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "3.3",
+        "sectionTitle": "Нефункціональні вимоги (NFR)",
+        "role": "requirements_nfr",
+        "status": "todo",
+        "priority": 21
+      },
+      {
+        "chapter": 3,
+        "chapterTitle": "ФОРМУВАННЯ ВИМОГ ДО ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "3.4",
+        "sectionTitle": "Обмеження, припущення та умови експлуатації системи",
+        "role": "requirements_constraints",
+        "status": "todo",
+        "priority": 22
+      },
+      {
+        "chapter": 3,
+        "chapterTitle": "ФОРМУВАННЯ ВИМОГ ДО ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "3.5",
+        "sectionTitle": "Висновки до розділу 3",
+        "role": "chapter_conclusions",
+        "status": "todo",
+        "priority": 23
+      },
+      {
+        "chapter": 4,
+        "chapterTitle": "ПРОЄКТУВАННЯ ТА АРХІТЕКТУРА ІНФОРМАЦІЙНОЇ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "4.1",
+        "sectionTitle": "Вибір архітектурного стилю та стеку технологій",
+        "role": "architecture_stack_choice",
+        "status": "todo",
+        "priority": 24
+      },
+      {
+        "chapter": 4,
+        "chapterTitle": "ПРОЄКТУВАННЯ ТА АРХІТЕКТУРА ІНФОРМАЦІЙНОЇ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "4.2",
+        "sectionTitle": "Структурна схема системи та її підсистеми",
+        "role": "architecture_structural",
+        "status": "todo",
+        "priority": 25
+      },
+      {
+        "chapter": 4,
+        "chapterTitle": "ПРОЄКТУВАННЯ ТА АРХІТЕКТУРА ІНФОРМАЦІЙНОЇ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "4.3",
+        "sectionTitle": "Сценарії використання системи (Use Case діаграми)",
+        "role": "architecture_use_cases",
+        "status": "todo",
+        "priority": 26
+      },
+      {
+        "chapter": 4,
+        "chapterTitle": "ПРОЄКТУВАННЯ ТА АРХІТЕКТУРА ІНФОРМАЦІЙНОЇ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "4.4",
+        "sectionTitle": "Модель даних та ER-діаграма",
+        "role": "architecture_data_model",
+        "status": "todo",
+        "priority": 27
+      },
+      {
+        "chapter": 4,
+        "chapterTitle": "ПРОЄКТУВАННЯ ТА АРХІТЕКТУРА ІНФОРМАЦІЙНОЇ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "4.5",
+        "sectionTitle": "Інтеграція з зовнішніми сервісами та інтерфейси API",
+        "role": "architecture_integration_api",
+        "status": "todo",
+        "priority": 28
+      },
+      {
+        "chapter": 4,
+        "chapterTitle": "ПРОЄКТУВАННЯ ТА АРХІТЕКТУРА ІНФОРМАЦІЙНОЇ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "4.6",
+        "sectionTitle": "Висновки до розділу 4",
+        "role": "chapter_conclusions",
+        "status": "todo",
+        "priority": 29
+      },
+      {
+        "chapter": 5,
+        "chapterTitle": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "5.1",
+        "sectionTitle": "Реалізація серверної частини на Go (API та мікросервіси)",
+        "role": "implementation_backend",
+        "status": "todo",
+        "priority": 30
+      },
+      {
+        "chapter": 5,
+        "chapterTitle": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "5.2",
+        "sectionTitle": "Математичне забезпечення алгоритмів IRP у системі LogiTrackPro",
+        "role": "implementation_math_support",
+        "status": "todo",
+        "priority": 31
+      },
+      {
+        "chapter": 5,
+        "chapterTitle": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "5.3",
+        "sectionTitle": "Реалізація алгоритмічного модуля IRP на Python",
+        "role": "implementation_irp_module",
+        "status": "todo",
+        "priority": 32
+      },
+      {
+        "chapter": 5,
+        "chapterTitle": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "5.4",
+        "sectionTitle": "Реалізація клієнтського інтерфейсу на React",
+        "role": "implementation_frontend",
+        "status": "todo",
+        "priority": 33
+      },
+      {
+        "chapter": 5,
+        "chapterTitle": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "5.5",
+        "sectionTitle": "Інфраструктура, деплоймент та конфігурація середовища",
+        "role": "implementation_infrastructure",
+        "status": "todo",
+        "priority": 34
+      },
+      {
+        "chapter": 5,
+        "chapterTitle": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "5.6",
+        "sectionTitle": "Механізми безпеки, логування та моніторингу",
+        "role": "implementation_security_logging",
+        "status": "todo",
+        "priority": 35
+      },
+      {
+        "chapter": 5,
+        "chapterTitle": "РЕАЛІЗАЦІЯ ТА МАТЕМАТИЧНЕ ЗАБЕЗПЕЧЕННЯ ІНФОРМАЦІЙНОЇ СИСТЕМИ КЕРУВАННЯ ЛОГІСТИЧНИМИ ПРОЦЕСАМИ",
+        "sectionCode": "5.7",
+        "sectionTitle": "Висновки до розділу 5",
+        "role": "chapter_conclusions",
+        "status": "todo",
+        "priority": 36
+      },
+      {
+        "chapter": 6,
+        "chapterTitle": "ТЕСТУВАННЯ, ЕКСПЕРИМЕНТИ ТА ОЦІНКА ЯКОСТІ РІШЕНЬ IRP",
+        "sectionCode": "6.1",
+        "sectionTitle": "Підхід до тестування та методологія валідації",
+        "role": "testing_approach",
+        "status": "todo",
+        "priority": 37
+      },
+      {
+        "chapter": 6,
+        "chapterTitle": "ТЕСТУВАННЯ, ЕКСПЕРИМЕНТИ ТА ОЦІНКА ЯКОСТІ РІШЕНЬ IRP",
+        "sectionCode": "6.2",
+        "sectionTitle": "Функціональне тестування компонентів системи",
+        "role": "testing_functional",
+        "status": "todo",
+        "priority": 38
+      },
+      {
+        "chapter": 6,
+        "chapterTitle": "ТЕСТУВАННЯ, ЕКСПЕРИМЕНТИ ТА ОЦІНКА ЯКОСТІ РІШЕНЬ IRP",
+        "sectionCode": "6.3",
+        "sectionTitle": "Навантажувальне тестування та оцінка продуктивності",
+        "role": "testing_performance",
+        "status": "todo",
+        "priority": 39
+      },
+      {
+        "chapter": 6,
+        "chapterTitle": "ТЕСТУВАННЯ, ЕКСПЕРИМЕНТИ ТА ОЦІНКА ЯКОСТІ РІШЕНЬ IRP",
+        "sectionCode": "6.4",
+        "sectionTitle": "Постановка експериментів для IRP та опис тестових сценаріїв",
+        "role": "experiments_setup",
+        "status": "todo",
+        "priority": 40
+      },
+      {
+        "chapter": 6,
+        "chapterTitle": "ТЕСТУВАННЯ, ЕКСПЕРИМЕНТИ ТА ОЦІНКА ЯКОСТІ РІШЕНЬ IRP",
+        "sectionCode": "6.5",
+        "sectionTitle": "Аналіз результатів експериментів та порівняння сценаріїв",
+        "role": "experiments_analysis",
+        "status": "todo",
+        "priority": 41
+      },
+      {
+        "chapter": 6,
+        "chapterTitle": "ТЕСТУВАННЯ, ЕКСПЕРИМЕНТИ ТА ОЦІНКА ЯКОСТІ РІШЕНЬ IRP",
+        "sectionCode": "6.6",
+        "sectionTitle": "Висновки до розділу 6",
+        "role": "chapter_conclusions",
+        "status": "todo",
+        "priority": 42
+      },
+      {
+        "chapter": 7,
+        "chapterTitle": "РОЗРОБЛЕННЯ СТАРТАП-ПРОЄКТУ НА ОСНОВІ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "7.1",
+        "sectionTitle": "Опис ідеї стартап-проєкту LogiTrackPro",
+        "role": "startup_idea",
+        "status": "todo",
+        "priority": 43
+      },
+      {
+        "chapter": 7,
+        "chapterTitle": "РОЗРОБЛЕННЯ СТАРТАП-ПРОЄКТУ НА ОСНОВІ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "7.2",
+        "sectionTitle": "Аналіз ринку, цільових сегментів та конкурентів",
+        "role": "startup_market_analysis",
+        "status": "todo",
+        "priority": 44
+      },
+      {
+        "chapter": 7,
+        "chapterTitle": "РОЗРОБЛЕННЯ СТАРТАП-ПРОЄКТУ НА ОСНОВІ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "7.3",
+        "sectionTitle": "Бізнес-модель та стратегія монетизації",
+        "role": "startup_business_model",
+        "status": "todo",
+        "priority": 45
+      },
+      {
+        "chapter": 7,
+        "chapterTitle": "РОЗРОБЛЕННЯ СТАРТАП-ПРОЄКТУ НА ОСНОВІ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "7.4",
+        "sectionTitle": "Маркетингова стратегія та канали залучення клієнтів",
+        "role": "startup_marketing",
+        "status": "todo",
+        "priority": 46
+      },
+      {
+        "chapter": 7,
+        "chapterTitle": "РОЗРОБЛЕННЯ СТАРТАП-ПРОЄКТУ НА ОСНОВІ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "7.5",
+        "sectionTitle": "План розвитку продукту та дорожня карта",
+        "role": "startup_roadmap",
+        "status": "todo",
+        "priority": 47
+      },
+      {
+        "chapter": 7,
+        "chapterTitle": "РОЗРОБЛЕННЯ СТАРТАП-ПРОЄКТУ НА ОСНОВІ СИСТЕМИ LogiTrackPro",
+        "sectionCode": "7.6",
+        "sectionTitle": "Висновки до розділу 7",
+        "role": "chapter_conclusions",
+        "status": "todo",
+        "priority": 48
+      },
+      {
+        "chapter": 8,
+        "chapterTitle": "ВИСНОВКИ",
+        "sectionCode": "8.1",
+        "sectionTitle": "Загальні висновки за результатами дослідження",
+        "role": "global_conclusions",
+        "status": "todo",
+        "priority": 49
+      },
+      {
+        "chapter": 8,
+        "chapterTitle": "ВИСНОВКИ",
+        "sectionCode": "8.2",
+        "sectionTitle": "Перспективи подальших досліджень та розвитку системи",
+        "role": "future_work",
+        "status": "todo",
+        "priority": 50
+      },
+      {
+        "chapter": 9,
+        "chapterTitle": "ДОДАТКИ",
+        "sectionCode": "9.1",
+        "sectionTitle": "Інструкція користувача інформаційної системи",
+        "role": "appendix_user_manual",
+        "status": "todo",
+        "priority": 51
+      },
+      {
+        "chapter": 9,
+        "chapterTitle": "ДОДАТКИ",
+        "sectionCode": "9.2",
+        "sectionTitle": "Специфікація API та формати обміну даними",
+        "role": "appendix_api_spec",
+        "status": "todo",
+        "priority": 52
+      },
+      {
+        "chapter": 9,
+        "chapterTitle": "ДОДАТКИ",
+        "sectionCode": "9.3",
+        "sectionTitle": "Приклади вхідних даних IRP та результатів оптимізації",
+        "role": "appendix_irp_examples",
+        "status": "todo",
+        "priority": 53
+      },
+      {
+        "chapter": 9,
+        "chapterTitle": "ДОДАТКИ",
+        "sectionCode": "9.4",
+        "sectionTitle": "Опис та параметри n8n-workflow для генерації дисертації",
+        "role": "appendix_n8n_workflow",
+        "status": "todo",
+        "priority": 54
+      },
+      {
+        "chapter": "M",
+        "chapterTitle": "Додаткові завдання оформлення",
+        "sectionCode": "M.1",
+        "sectionTitle": "Перелік скорочень та умовних позначень",
+        "role": "meta_abbreviations",
+        "status": "todo",
+        "priority": 55
+      },
+      {
+        "chapter": "M",
+        "chapterTitle": "Додаткові завдання оформлення",
+        "sectionCode": "M.2",
+        "sectionTitle": "Реферат та abstract",
+        "role": "meta_abstracts",
+        "status": "todo",
+        "priority": 56
+      },
+      {
+        "chapter": "M",
+        "chapterTitle": "Додаткові завдання оформлення",
+        "sectionCode": "M.3",
+        "sectionTitle": "Оформлення списку використаних джерел",
+        "role": "meta_references",
+        "status": "todo",
+        "priority": 57
+      },
+      {
+        "chapter": "M",
+        "chapterTitle": "Додаткові завдання оформлення",
+        "sectionCode": "M.4",
+        "sectionTitle": "Підготовка графічних матеріалів (усі розділи)",
+        "role": "meta_graphics",
+        "status": "todo",
+        "priority": 58
+      },
+      {
+        "chapter": "M",
+        "chapterTitle": "Додаткові завдання оформлення",
+        "sectionCode": "M.5",
+        "sectionTitle": "Фінальне редагування, перевірка антиплагіату та форматування",
+        "role": "meta_final_polish",
+        "status": "todo",
+        "priority": 59
+      }
+    ]
+  }
+  
