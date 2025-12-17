@@ -1,137 +1,76 @@
 package database
 
 import (
-	"database/sql"
+	"errors"
 
 	"LogiTrackPro/backend/internal/models"
+
+	"gorm.io/gorm"
 )
 
-func ListVehicles(db *sql.DB) ([]models.Vehicle, error) {
-	query := `SELECT id, name, capacity, cost_per_km, fixed_cost, max_distance, 
-			  available, COALESCE(warehouse_id, 0), created_at, updated_at 
-			  FROM vehicles ORDER BY name`
-	
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
+func ListVehicles(db *gorm.DB) ([]models.Vehicle, error) {
 	var vehicles []models.Vehicle
-	for rows.Next() {
-		var v models.Vehicle
-		err := rows.Scan(
-			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost,
-			&v.MaxDistance, &v.Available, &v.WarehouseID,
-			&v.CreatedAt, &v.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		vehicles = append(vehicles, v)
-	}
-	return vehicles, nil
+	err := db.Order("name").Find(&vehicles).Error
+	return vehicles, err
 }
 
-func ListAvailableVehiclesByWarehouse(db *sql.DB, warehouseID int64) ([]models.Vehicle, error) {
-	query := `SELECT id, name, capacity, cost_per_km, fixed_cost, max_distance, 
-			  available, warehouse_id, created_at, updated_at 
-			  FROM vehicles WHERE warehouse_id = $1 AND available = true ORDER BY name`
-	
-	rows, err := db.Query(query, warehouseID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
+func ListAvailableVehiclesByWarehouse(db *gorm.DB, warehouseID int64) ([]models.Vehicle, error) {
 	var vehicles []models.Vehicle
-	for rows.Next() {
-		var v models.Vehicle
-		err := rows.Scan(
-			&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost,
-			&v.MaxDistance, &v.Available, &v.WarehouseID,
-			&v.CreatedAt, &v.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		vehicles = append(vehicles, v)
-	}
-	return vehicles, nil
+	err := db.Where("warehouse_id = ? AND available = ?", warehouseID, true).
+		Order("name").
+		Find(&vehicles).Error
+	return vehicles, err
 }
 
-func GetVehicle(db *sql.DB, id int64) (*models.Vehicle, error) {
+func GetVehicle(db *gorm.DB, id int64) (*models.Vehicle, error) {
 	v := &models.Vehicle{}
-	query := `SELECT id, name, capacity, cost_per_km, fixed_cost, max_distance, 
-			  available, COALESCE(warehouse_id, 0), created_at, updated_at 
-			  FROM vehicles WHERE id = $1`
-	
-	err := db.QueryRow(query, id).Scan(
-		&v.ID, &v.Name, &v.Capacity, &v.CostPerKm, &v.FixedCost,
-		&v.MaxDistance, &v.Available, &v.WarehouseID,
-		&v.CreatedAt, &v.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	}
+	err := db.First(v, id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return v, nil
 }
 
-func CreateVehicle(db *sql.DB, v *models.Vehicle) error {
-	var warehouseID interface{} = nil
-	if v.WarehouseID > 0 {
-		warehouseID = v.WarehouseID
-	}
-	
-	query := `INSERT INTO vehicles (name, capacity, cost_per_km, fixed_cost, 
-			  max_distance, available, warehouse_id) 
-			  VALUES ($1, $2, $3, $4, $5, $6, $7) 
-			  RETURNING id, created_at, updated_at`
-	
-	return db.QueryRow(query, v.Name, v.Capacity, v.CostPerKm, v.FixedCost,
-		v.MaxDistance, v.Available, warehouseID).Scan(&v.ID, &v.CreatedAt, &v.UpdatedAt)
+func CreateVehicle(db *gorm.DB, v *models.Vehicle) error {
+	return db.Create(v).Error
 }
 
-func UpdateVehicle(db *sql.DB, v *models.Vehicle) error {
-	var warehouseID interface{} = nil
-	if v.WarehouseID > 0 {
-		warehouseID = v.WarehouseID
+func UpdateVehicle(db *gorm.DB, v *models.Vehicle) error {
+	result := db.Model(v).Updates(models.Vehicle{
+		Name:        v.Name,
+		Capacity:    v.Capacity,
+		CostPerKm:   v.CostPerKm,
+		FixedCost:   v.FixedCost,
+		MaxDistance: v.MaxDistance,
+		Available:   v.Available,
+		WarehouseID: v.WarehouseID,
+	})
+	if result.Error != nil {
+		return result.Error
 	}
-	
-	query := `UPDATE vehicles SET name = $1, capacity = $2, cost_per_km = $3, 
-			  fixed_cost = $4, max_distance = $5, available = $6, warehouse_id = $7, 
-			  updated_at = CURRENT_TIMESTAMP WHERE id = $8`
-	
-	result, err := db.Exec(query, v.Name, v.Capacity, v.CostPerKm, v.FixedCost,
-		v.MaxDistance, v.Available, warehouseID, v.ID)
-	if err != nil {
-		return err
-	}
-	rows, _ := result.RowsAffected()
-	if rows == 0 {
+	if result.RowsAffected == 0 {
 		return ErrNotFound
 	}
 	return nil
 }
 
-func DeleteVehicle(db *sql.DB, id int64) error {
-	result, err := db.Exec("DELETE FROM vehicles WHERE id = $1", id)
-	if err != nil {
-		return err
+func DeleteVehicle(db *gorm.DB, id int64) error {
+	result := db.Delete(&models.Vehicle{}, id)
+	if result.Error != nil {
+		return result.Error
 	}
-	rows, _ := result.RowsAffected()
-	if rows == 0 {
+	if result.RowsAffected == 0 {
 		return ErrNotFound
 	}
 	return nil
 }
 
-func CountVehicles(db *sql.DB) (int, error) {
-	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM vehicles").Scan(&count)
-	return count, err
+func CountVehicles(db *gorm.DB) (int, error) {
+	var count int64
+	err := db.Model(&models.Vehicle{}).Count(&count).Error
+	return int(count), err
 }
 
