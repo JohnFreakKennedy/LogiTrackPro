@@ -1,59 +1,44 @@
 package database
 
 import (
-	"database/sql"
 	"errors"
 
 	"LogiTrackPro/backend/internal/models"
+
+	"gorm.io/gorm"
 )
 
 var ErrNotFound = errors.New("record not found")
 var ErrDuplicate = errors.New("record already exists")
 
-func GetUserByEmail(db *sql.DB, email string) (*models.User, error) {
+func GetUserByEmail(db *gorm.DB, email string) (*models.User, error) {
 	user := &models.User{}
-	query := `SELECT id, email, password_hash, name, role, created_at, updated_at 
-			  FROM users WHERE email = $1`
-	
-	err := db.QueryRow(query, email).Scan(
-		&user.ID, &user.Email, &user.Password, &user.Name, 
-		&user.Role, &user.CreatedAt, &user.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	}
+	err := db.Where("email = ?", email).First(user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return user, nil
 }
 
-func GetUserByID(db *sql.DB, id int64) (*models.User, error) {
+func GetUserByID(db *gorm.DB, id int64) (*models.User, error) {
 	user := &models.User{}
-	query := `SELECT id, email, password_hash, name, role, created_at, updated_at 
-			  FROM users WHERE id = $1`
-	
-	err := db.QueryRow(query, id).Scan(
-		&user.ID, &user.Email, &user.Password, &user.Name, 
-		&user.Role, &user.CreatedAt, &user.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	}
+	err := db.First(user, id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return user, nil
 }
 
-func CreateUser(db *sql.DB, user *models.User) error {
-	query := `INSERT INTO users (email, password_hash, name, role) 
-			  VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at`
-	
-	err := db.QueryRow(query, user.Email, user.Password, user.Name, user.Role).Scan(
-		&user.ID, &user.CreatedAt, &user.UpdatedAt,
-	)
+func CreateUser(db *gorm.DB, user *models.User) error {
+	err := db.Create(user).Error
 	if err != nil {
+		// Check for unique constraint violation
 		if isUniqueViolation(err) {
 			return ErrDuplicate
 		}
@@ -63,7 +48,13 @@ func CreateUser(db *sql.DB, user *models.User) error {
 }
 
 func isUniqueViolation(err error) bool {
-	return err != nil && (contains(err.Error(), "unique") || contains(err.Error(), "duplicate"))
+	// GORM wraps PostgreSQL errors, check for unique constraint violations
+	return err != nil && (
+		errors.Is(err, gorm.ErrDuplicatedKey) ||
+		contains(err.Error(), "unique") ||
+		contains(err.Error(), "duplicate") ||
+		contains(err.Error(), "violates unique constraint"),
+	)
 }
 
 func contains(s, substr string) bool {

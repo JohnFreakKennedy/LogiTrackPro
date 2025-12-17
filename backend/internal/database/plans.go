@@ -1,147 +1,87 @@
 package database
 
 import (
-	"database/sql"
+	"errors"
 
 	"LogiTrackPro/backend/internal/models"
+
+	"gorm.io/gorm"
 )
 
-func ListPlans(db *sql.DB) ([]models.Plan, error) {
-	query := `SELECT id, name, start_date, end_date, status, total_cost, 
-			  total_distance, COALESCE(warehouse_id, 0), COALESCE(created_by, 0), 
-			  created_at, updated_at FROM plans ORDER BY created_at DESC`
-	
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
+func ListPlans(db *gorm.DB) ([]models.Plan, error) {
 	var plans []models.Plan
-	for rows.Next() {
-		var p models.Plan
-		err := rows.Scan(
-			&p.ID, &p.Name, &p.StartDate, &p.EndDate, &p.Status,
-			&p.TotalCost, &p.TotalDistance, &p.WarehouseID, &p.CreatedBy,
-			&p.CreatedAt, &p.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		plans = append(plans, p)
-	}
-	return plans, nil
+	err := db.Order("created_at DESC").Find(&plans).Error
+	return plans, err
 }
 
-func GetPlan(db *sql.DB, id int64) (*models.Plan, error) {
+func GetPlan(db *gorm.DB, id int64) (*models.Plan, error) {
 	p := &models.Plan{}
-	query := `SELECT id, name, start_date, end_date, status, total_cost, 
-			  total_distance, COALESCE(warehouse_id, 0), COALESCE(created_by, 0), 
-			  created_at, updated_at FROM plans WHERE id = $1`
-	
-	err := db.QueryRow(query, id).Scan(
-		&p.ID, &p.Name, &p.StartDate, &p.EndDate, &p.Status,
-		&p.TotalCost, &p.TotalDistance, &p.WarehouseID, &p.CreatedBy,
-		&p.CreatedAt, &p.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	}
+	err := db.First(p, id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return p, nil
 }
 
-func CreatePlan(db *sql.DB, p *models.Plan) error {
-	var warehouseID, createdBy interface{} = nil, nil
-	if p.WarehouseID > 0 {
-		warehouseID = p.WarehouseID
-	}
-	if p.CreatedBy > 0 {
-		createdBy = p.CreatedBy
-	}
-	
-	query := `INSERT INTO plans (name, start_date, end_date, status, warehouse_id, created_by) 
-			  VALUES ($1, $2, $3, $4, $5, $6) 
-			  RETURNING id, created_at, updated_at`
-	
-	return db.QueryRow(query, p.Name, p.StartDate, p.EndDate, p.Status,
-		warehouseID, createdBy).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
+func CreatePlan(db *gorm.DB, p *models.Plan) error {
+	return db.Create(p).Error
 }
 
-func UpdatePlanStatus(db *sql.DB, id int64, status string, totalCost, totalDistance float64) error {
-	query := `UPDATE plans SET status = $1, total_cost = $2, total_distance = $3, 
-			  updated_at = CURRENT_TIMESTAMP WHERE id = $4`
-	
-	result, err := db.Exec(query, status, totalCost, totalDistance, id)
-	if err != nil {
-		return err
+func UpdatePlanStatus(db *gorm.DB, id int64, status string, totalCost, totalDistance float64) error {
+	result := db.Model(&models.Plan{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"status":         status,
+		"total_cost":     totalCost,
+		"total_distance": totalDistance,
+	})
+	if result.Error != nil {
+		return result.Error
 	}
-	rows, _ := result.RowsAffected()
-	if rows == 0 {
+	if result.RowsAffected == 0 {
 		return ErrNotFound
 	}
 	return nil
 }
 
-func UpdatePlanStatusTx(tx *sql.Tx, id int64, status string, totalCost, totalDistance float64) error {
-	query := `UPDATE plans SET status = $1, total_cost = $2, total_distance = $3, 
-			  updated_at = CURRENT_TIMESTAMP WHERE id = $4`
-	
-	result, err := tx.Exec(query, status, totalCost, totalDistance, id)
-	if err != nil {
-		return err
+func UpdatePlanStatusTx(tx *gorm.DB, id int64, status string, totalCost, totalDistance float64) error {
+	result := tx.Model(&models.Plan{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"status":         status,
+		"total_cost":     totalCost,
+		"total_distance": totalDistance,
+	})
+	if result.Error != nil {
+		return result.Error
 	}
-	rows, _ := result.RowsAffected()
-	if rows == 0 {
+	if result.RowsAffected == 0 {
 		return ErrNotFound
 	}
 	return nil
 }
 
-func DeletePlan(db *sql.DB, id int64) error {
-	result, err := db.Exec("DELETE FROM plans WHERE id = $1", id)
-	if err != nil {
-		return err
+func DeletePlan(db *gorm.DB, id int64) error {
+	result := db.Delete(&models.Plan{}, id)
+	if result.Error != nil {
+		return result.Error
 	}
-	rows, _ := result.RowsAffected()
-	if rows == 0 {
+	if result.RowsAffected == 0 {
 		return ErrNotFound
 	}
 	return nil
 }
 
-func CountActivePlans(db *sql.DB) (int, error) {
-	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM plans WHERE status IN ('draft', 'optimizing', 'optimized')").Scan(&count)
-	return count, err
+func CountActivePlans(db *gorm.DB) (int, error) {
+	var count int64
+	err := db.Model(&models.Plan{}).
+		Where("status IN ?", []string{"draft", "optimizing", "optimized"}).
+		Count(&count).Error
+	return int(count), err
 }
 
-func GetRecentPlans(db *sql.DB, limit int) ([]models.Plan, error) {
-	query := `SELECT id, name, start_date, end_date, status, total_cost, 
-			  total_distance, COALESCE(warehouse_id, 0), COALESCE(created_by, 0), 
-			  created_at, updated_at FROM plans ORDER BY created_at DESC LIMIT $1`
-	
-	rows, err := db.Query(query, limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
+func GetRecentPlans(db *gorm.DB, limit int) ([]models.Plan, error) {
 	var plans []models.Plan
-	for rows.Next() {
-		var p models.Plan
-		err := rows.Scan(
-			&p.ID, &p.Name, &p.StartDate, &p.EndDate, &p.Status,
-			&p.TotalCost, &p.TotalDistance, &p.WarehouseID, &p.CreatedBy,
-			&p.CreatedAt, &p.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		plans = append(plans, p)
-	}
-	return plans, nil
+	err := db.Order("created_at DESC").Limit(limit).Find(&plans).Error
+	return plans, err
 }
 

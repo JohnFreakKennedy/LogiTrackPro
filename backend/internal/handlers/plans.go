@@ -260,103 +260,71 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 	}
 
 	// Begin transaction for atomic route creation
-	tx, err := h.db.Begin()
-	if err != nil {
-		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
-			errorResponse(c, http.StatusInternalServerError, "Failed to begin transaction: "+err.Error()+". Revert failed: "+revertErr.Error())
-		} else {
-			errorResponse(c, http.StatusInternalServerError, "Failed to begin transaction: "+err.Error())
+	err = h.db.Transaction(func(tx *gorm.DB) error {
+		// Delete existing routes
+		if err := database.DeleteRoutesByPlanTx(tx, id); err != nil {
+			return err
 		}
-		return
-	}
 
-	// Delete existing routes
-	if err := database.DeleteRoutesByPlanTx(tx, id); err != nil {
-		tx.Rollback()
-		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
-			errorResponse(c, http.StatusInternalServerError, "Failed to clear routes: "+err.Error()+". Revert failed: "+revertErr.Error())
-		} else {
-			errorResponse(c, http.StatusInternalServerError, "Failed to clear existing routes: "+err.Error())
-		}
-		return
-	}
-
-	// Save new routes
-	for _, routeResult := range optResp.Routes {
-		routeDate, err := time.Parse("2006-01-02", routeResult.Date)
-		if err != nil {
-			tx.Rollback()
-			if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
-				errorResponse(c, http.StatusInternalServerError, "Invalid date: "+err.Error()+". Revert failed: "+revertErr.Error())
-			} else {
-				errorResponse(c, http.StatusInternalServerError, "Failed to parse route date: "+err.Error())
+		// Save new routes
+		for _, routeResult := range optResp.Routes {
+			routeDate, err := time.Parse("2006-01-02", routeResult.Date)
+			if err != nil {
+				return err
 			}
-			return
-		}
-		var vehicleID *int64
-		if routeResult.VehicleID != 0 {
-			vID := routeResult.VehicleID
-			vehicleID = &vID
-		}
-		route := &models.Route{
-			PlanID:        id,
-			VehicleID:     vehicleID,
-			Day:           routeResult.Day,
-			Date:          routeDate,
-			TotalDistance: routeResult.TotalDistance,
-			TotalCost:     routeResult.TotalCost,
-			TotalLoad:     routeResult.TotalLoad,
-		}
-
-		if err := database.CreateRouteTx(tx, route); err != nil {
-			tx.Rollback()
-			if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
-				errorResponse(c, http.StatusInternalServerError, "Failed to save route: "+err.Error()+". Revert failed: "+revertErr.Error())
-			} else {
-				errorResponse(c, http.StatusInternalServerError, "Failed to save route: "+err.Error())
+			var vehicleID *int64
+			if routeResult.VehicleID != 0 {
+				vID := routeResult.VehicleID
+				vehicleID = &vID
 			}
-			return
-		}
-
-		// Save stops
-		for _, stopResult := range routeResult.Stops {
-			stop := &models.Stop{
-				RouteID:     route.ID,
-				CustomerID:  stopResult.CustomerID,
-				Sequence:    stopResult.Sequence,
-				Quantity:    stopResult.Quantity,
-				ArrivalTime: stopResult.ArrivalTime,
+			route := &models.Route{
+				PlanID:        id,
+				VehicleID:     vehicleID,
+				Day:           routeResult.Day,
+				Date:          routeDate,
+				TotalDistance: routeResult.TotalDistance,
+				TotalCost:     routeResult.TotalCost,
+				TotalLoad:     routeResult.TotalLoad,
 			}
-			if err := database.CreateStopTx(tx, stop); err != nil {
-				tx.Rollback()
-				if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
-					errorResponse(c, http.StatusInternalServerError, "Failed to save stop: "+err.Error()+". Revert failed: "+revertErr.Error())
-				} else {
-					errorResponse(c, http.StatusInternalServerError, "Failed to save stop: "+err.Error())
+
+			if err := database.CreateRouteTx(tx, route); err != nil {
+				return err
+			}
+
+			// Save stops
+			for _, stopResult := range routeResult.Stops {
+				var customerID *int64
+				if stopResult.CustomerID > 0 {
+					cID := stopResult.CustomerID
+					customerID = &cID
 				}
-				return
+				stop := &models.Stop{
+					RouteID:     route.ID,
+					CustomerID:  customerID,
+					Sequence:    stopResult.Sequence,
+					Quantity:    stopResult.Quantity,
+					ArrivalTime: stopResult.ArrivalTime,
+				}
+				if err := database.CreateStopTx(tx, stop); err != nil {
+					return err
+				}
 			}
 		}
-	}
 
-	// Update plan status within transaction
-	if err := database.UpdatePlanStatusTx(tx, id, "optimized", optResp.TotalCost, optResp.TotalDistance); err != nil {
-		tx.Rollback()
-		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
-			errorResponse(c, http.StatusInternalServerError, "Failed to update plan status: "+err.Error()+". Revert failed: "+revertErr.Error())
-		} else {
-			errorResponse(c, http.StatusInternalServerError, "Failed to update plan status: "+err.Error())
+		// Update plan status within transaction
+		if err := database.UpdatePlanStatusTx(tx, id, "optimized", optResp.TotalCost, optResp.TotalDistance); err != nil {
+			return err
 		}
-		return
-	}
 
-	// Commit transaction
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
+		return nil
+	})
+
+	if err != nil {
+		// Revert plan status on transaction failure
 		if revertErr := database.UpdatePlanStatus(h.db, id, "draft", 0, 0); revertErr != nil {
-			errorResponse(c, http.StatusInternalServerError, "Failed to commit transaction: "+err.Error()+". Revert failed: "+revertErr.Error())
+			errorResponse(c, http.StatusInternalServerError, "Transaction failed: "+err.Error()+". Revert failed: "+revertErr.Error())
 		} else {
-			errorResponse(c, http.StatusInternalServerError, "Failed to commit transaction: "+err.Error())
+			errorResponse(c, http.StatusInternalServerError, "Transaction failed: "+err.Error())
 		}
 		return
 	}

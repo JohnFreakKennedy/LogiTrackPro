@@ -1,22 +1,22 @@
 package handlers
 
 import (
-	"database/sql"
 	"net/http"
 
 	"LogiTrackPro/backend/internal/config"
 	"LogiTrackPro/backend/internal/optimizer"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
-	db        *sql.DB
+	db        *gorm.DB
 	optimizer *optimizer.Client
 	config    *config.Config
 }
 
-func New(db *sql.DB, optimizerClient *optimizer.Client, cfg *config.Config) *Handler {
+func New(db *gorm.DB, optimizerClient *optimizer.Client, cfg *config.Config) *Handler {
 	return &Handler{
 		db:        db,
 		optimizer: optimizerClient,
@@ -28,7 +28,10 @@ func New(db *sql.DB, optimizerClient *optimizer.Client, cfg *config.Config) *Han
 func (h *Handler) HealthCheck(c *gin.Context) {
 	// Check database connection
 	dbStatus := "connected"
-	if err := h.db.Ping(); err != nil {
+	sqlDB, err := h.db.DB()
+	if err != nil {
+		dbStatus = "disconnected"
+	} else if err := sqlDB.Ping(); err != nil {
 		dbStatus = "disconnected"
 	}
 
