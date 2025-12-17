@@ -1,14 +1,15 @@
 """
-IRP (Inventory Routing Problem) Solver
-Implements a heuristic algorithm for solving the inventory routing problem.
+IRP (Inventory Routing Problem) Solver using Google OR-Tools
+Implements a VRP-based approach for solving the inventory routing problem.
 """
 
 import math
 from datetime import datetime, timedelta
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 
-import numpy as np
+from ortools.constraint_solver import routing_enums_pb2
+from ortools.constraint_solver import pywrapcp
 
 
 @dataclass
@@ -41,13 +42,13 @@ class OptimizeResponse:
 
 class IRPSolver:
     """
-    Inventory Routing Problem Solver using a heuristic approach.
+    Inventory Routing Problem Solver using Google OR-Tools.
     
     The algorithm:
     1. For each day in the planning horizon:
        a. Determine which customers need delivery (inventory projection)
-       b. Assign customers to vehicles using nearest neighbor insertion
-       c. Optimize route for each vehicle using 2-opt improvement
+       b. Solve VRP using OR-Tools for that day
+       c. Update inventory levels
     """
     
     def __init__(self, warehouse, customers, vehicles, planning_horizon, start_date):
@@ -71,20 +72,26 @@ class IRPSolver:
             locations[cid] = (customer.latitude, customer.longitude)
         return locations
     
-    def _compute_distance_matrix(self) -> Dict[Tuple[int, int], float]:
-        """Compute haversine distances between all locations"""
-        matrix = {}
-        ids = list(self.locations.keys())
+    def _compute_distance_matrix(self) -> List[List[int]]:
+        """
+        Compute distance matrix as integers (OR-Tools requires integers).
+        Returns matrix where [i][j] is distance from location i to j in meters.
+        """
+        ids = sorted(self.locations.keys())
+        n = len(ids)
+        matrix = [[0] * n for _ in range(n)]
         
-        for i in ids:
-            for j in ids:
-                if i == j:
-                    matrix[(i, j)] = 0
-                else:
-                    matrix[(i, j)] = self._haversine(
-                        self.locations[i][0], self.locations[i][1],
-                        self.locations[j][0], self.locations[j][1]
+        for i, id_i in enumerate(ids):
+            for j, id_j in enumerate(ids):
+                if i != j:
+                    # Calculate haversine distance in meters
+                    dist_km = self._haversine(
+                        self.locations[id_i][0], self.locations[id_i][1],
+                        self.locations[id_j][0], self.locations[id_j][1]
                     )
+                    # Convert to meters and round to integer
+                    matrix[i][j] = int(dist_km * 1000)
+        
         return matrix
     
     @staticmethod
@@ -118,8 +125,8 @@ class IRPSolver:
                 self._update_inventory()
                 continue
             
-            # Create routes for this day
-            day_routes = self._create_day_routes(day, current_date, customers_to_visit)
+            # Solve VRP for this day using OR-Tools
+            day_routes = self._solve_day_vrp(day, current_date, customers_to_visit)
             
             for route in day_routes:
                 all_routes.append(route)
@@ -135,9 +142,9 @@ class IRPSolver:
         
         return OptimizeResponse(
             success=True,
-            message=f"Optimization complete: {len(all_routes)} routes generated",
-            total_cost=total_cost,
-            total_distance=total_distance,
+            message=f"Optimization complete: {len(all_routes)} routes generated using OR-Tools",
+            total_cost=round(total_cost, 2),
+            total_distance=round(total_distance, 2),
             routes=all_routes
         )
     
@@ -167,9 +174,221 @@ class IRPSolver:
         
         return customers_needing_delivery
     
-    def _create_day_routes(self, day: int, date: datetime, 
-                           customers_to_visit: List[int]) -> List[RouteResult]:
-        """Create routes for a single day"""
+    def _solve_day_vrp(self, day: int, date: datetime, 
+                       customers_to_visit: List[int]) -> List[RouteResult]:
+        """
+        Solve Vehicle Routing Problem for a single day using OR-Tools.
+        """
+        if not customers_to_visit:
+            return []
+        
+        # Map customer IDs to matrix indices (0 = warehouse, 1+ = customers)
+        customer_id_to_index = {0: 0}  # Warehouse is always index 0
+        index_to_customer_id = {0: 0}
+        
+        for idx, cid in enumerate(customers_to_visit, start=1):
+            customer_id_to_index[cid] = idx
+            index_to_customer_id[idx] = cid
+        
+        num_locations = len(customers_to_visit) + 1  # +1 for warehouse
+        num_vehicles = len(self.vehicles)
+        
+        # Create distance callback
+        def distance_callback(from_index, to_index):
+            """Returns the distance between the two nodes."""
+            from_node = index_to_customer_id[from_index]
+            to_node = index_to_customer_id[to_index]
+            
+            # Get original IDs for distance lookup
+            from_id = from_node if from_node != 0 else 0
+            to_id = to_node if to_node != 0 else 0
+            
+            # Find indices in original location list
+            all_ids = sorted(self.locations.keys())
+            from_idx = all_ids.index(from_id)
+            to_idx = all_ids.index(to_id)
+            
+            return self.distance_matrix[from_idx][to_idx]
+        
+        # Create demand callback (delivery quantities)
+        def demand_callback(from_index):
+            """Returns the demand at a node."""
+            if from_index == 0:  # Warehouse
+                return 0
+            
+            cid = index_to_customer_id[from_index]
+            customer = self.customers[cid]
+            
+            # Calculate delivery quantity needed
+            delivery_qty = min(
+                customer.max_inventory - self.inventory[cid],
+                customer.max_inventory  # Don't exceed max
+            )
+            
+            # Convert to integer (OR-Tools requires integers)
+            # Use grams as unit to maintain precision
+            return int(delivery_qty * 1000)
+        
+        # Create routing model
+        manager = pywrapcp.RoutingIndexManager(
+            num_locations, num_vehicles, 0  # depot_index = 0 (warehouse)
+        )
+        routing = pywrapcp.RoutingModel(manager)
+        
+        # Register callbacks
+        transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+        routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+        
+        # Add capacity constraint
+        demand_callback_index = routing.RegisterUnaryCallback(demand_callback)
+        
+        # Vehicle capacities as a list (in grams for precision)
+        vehicle_capacities = []
+        vehicle_ids_list = list(self.vehicles.keys())
+        for vehicle_index in range(num_vehicles):
+            vehicle_id = vehicle_ids_list[vehicle_index]
+            vehicle = self.vehicles[vehicle_id]
+            # Convert to grams
+            vehicle_capacities.append(int(vehicle.capacity * 1000))
+        
+        routing.AddDimensionWithVehicleCapacity(
+            demand_callback_index,
+            0,  # null capacity slack
+            vehicle_capacities,  # vehicle capacities list
+            True,  # start cumul to zero
+            'Capacity'
+        )
+        
+        # Add distance constraint (max distance per vehicle)
+        dimension_name = 'Distance'
+        routing.AddDimension(
+            transit_callback_index,
+            0,  # no slack
+            300000000,  # vehicle maximum travel distance (300,000 km in meters)
+            True,  # start cumul to zero
+            dimension_name
+        )
+        distance_dimension = routing.GetDimensionOrDie(dimension_name)
+        distance_dimension.SetGlobalSpanCostCoefficient(100)
+        
+        # Set max distance per vehicle if specified
+        for vehicle_index in range(num_vehicles):
+            vehicle_id = list(self.vehicles.keys())[vehicle_index]
+            vehicle = self.vehicles[vehicle_id]
+            if vehicle.max_distance > 0:
+                max_dist_meters = int(vehicle.max_distance * 1000)
+                distance_dimension.CumulVar(
+                    manager.Start(vehicle_index)
+                ).SetMax(max_dist_meters)
+        
+        # Set search parameters
+        search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+        )
+        search_parameters.local_search_metaheuristic = (
+            routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
+        )
+        search_parameters.time_limit.seconds = 30  # 30 second time limit per day
+        search_parameters.log_search = False
+        
+        # Solve
+        solution = routing.SolveWithParameters(search_parameters)
+        
+        if not solution:
+            # Fallback: create simple routes if OR-Tools fails
+            return self._create_fallback_routes(day, date, customers_to_visit)
+        
+        # Extract routes from solution
+        routes = []
+        vehicle_ids = list(self.vehicles.keys())
+        
+        for vehicle_index in range(num_vehicles):
+            vehicle_id = vehicle_ids[vehicle_index]
+            vehicle = self.vehicles[vehicle_id]
+            
+            route_customers = []
+            route_deliveries = {}
+            index = routing.Start(vehicle_index)
+            route_distance = 0
+            prev_index = index
+            
+            while not routing.IsEnd(index):
+                node_index = manager.IndexToNode(index)
+                if node_index != 0:  # Not warehouse
+                    cid = index_to_customer_id[node_index]
+                    route_customers.append(cid)
+                    
+                    # Get delivery quantity from demand callback
+                    demand = demand_callback(node_index)
+                    delivery_qty = demand / 1000.0  # Convert back from grams
+                    route_deliveries[cid] = delivery_qty
+                
+                # Calculate distance
+                next_index = solution.Value(routing.NextVar(index))
+                route_distance += distance_callback(prev_index, next_index)
+                prev_index = next_index
+                index = next_index
+            
+            if route_customers:
+                # Convert distance from meters to km
+                route_distance_km = route_distance / 1000.0
+                route_cost = vehicle.fixed_cost + (route_distance_km * vehicle.cost_per_km)
+                total_load = sum(route_deliveries.values())
+                
+                # Create stops with arrival times
+                stops = []
+                current_time = datetime.combine(date.date(), datetime.min.time().replace(hour=8))
+                avg_speed = 50  # km/h
+                
+                prev_loc = 0  # warehouse
+                for seq, cid in enumerate(route_customers, 1):
+                    # Calculate travel time
+                    all_ids = sorted(self.locations.keys())
+                    prev_idx = all_ids.index(prev_loc)
+                    curr_idx = all_ids.index(cid)
+                    dist_km = self.distance_matrix[prev_idx][curr_idx] / 1000.0
+                    travel_time = timedelta(hours=dist_km / avg_speed)
+                    current_time += travel_time
+                    
+                    stops.append(StopResult(
+                        customer_id=cid,
+                        sequence=seq,
+                        quantity=round(route_deliveries[cid], 2),
+                        arrival_time=current_time.strftime("%H:%M")
+                    ))
+                    
+                    # Add service time (15 min per stop)
+                    current_time += timedelta(minutes=15)
+                    prev_loc = cid
+                
+                # Add return to warehouse distance
+                if route_customers:
+                    last_cid = route_customers[-1]
+                    all_ids = sorted(self.locations.keys())
+                    last_idx = all_ids.index(last_cid)
+                    return_dist_km = self.distance_matrix[last_idx][0] / 1000.0
+                    route_distance_km += return_dist_km
+                    route_cost = vehicle.fixed_cost + (route_distance_km * vehicle.cost_per_km)
+                
+                routes.append(RouteResult(
+                    day=day + 1,
+                    date=date.strftime("%Y-%m-%d"),
+                    vehicle_id=vehicle_id,
+                    total_distance=round(route_distance_km, 2),
+                    total_cost=round(route_cost, 2),
+                    total_load=round(total_load, 2),
+                    stops=stops
+                ))
+        
+        return routes
+    
+    def _create_fallback_routes(self, day: int, date: datetime, 
+                                customers_to_visit: List[int]) -> List[RouteResult]:
+        """
+        Fallback route creation if OR-Tools fails.
+        Uses simple nearest neighbor approach.
+        """
         routes = []
         unassigned = set(customers_to_visit)
         vehicle_ids = list(self.vehicles.keys())
@@ -179,44 +398,94 @@ class IRPSolver:
             vehicle_id = vehicle_ids[vehicle_index]
             vehicle = self.vehicles[vehicle_id]
             
-            # Build route for this vehicle
-            route_customers, deliveries = self._build_vehicle_route(
-                vehicle, list(unassigned)
-            )
+            # Simple nearest neighbor route
+            route_customers = []
+            route_deliveries = {}
+            current_location = 0  # warehouse
+            remaining_capacity = vehicle.capacity
+            
+            while unassigned and remaining_capacity > 0:
+                # Find nearest unassigned customer
+                best_customer = None
+                best_distance = float('inf')
+                
+                all_ids = sorted(self.locations.keys())
+                current_idx = all_ids.index(current_location)
+                
+                for cid in list(unassigned):
+                    customer = self.customers[cid]
+                    delivery_qty = min(
+                        customer.max_inventory - self.inventory[cid],
+                        remaining_capacity,
+                        customer.max_inventory
+                    )
+                    
+                    if delivery_qty <= 0:
+                        continue
+                    
+                    cid_idx = all_ids.index(cid)
+                    dist = self.distance_matrix[current_idx][cid_idx]
+                    
+                    if dist < best_distance:
+                        best_distance = dist
+                        best_customer = cid
+                
+                if best_customer is None:
+                    break
+                
+                customer = self.customers[best_customer]
+                delivery_qty = min(
+                    customer.max_inventory - self.inventory[best_customer],
+                    remaining_capacity
+                )
+                
+                route_customers.append(best_customer)
+                route_deliveries[best_customer] = delivery_qty
+                remaining_capacity -= delivery_qty
+                current_location = best_customer
+                unassigned.discard(best_customer)
             
             if route_customers:
-                # Remove assigned customers
-                for cid in route_customers:
-                    unassigned.discard(cid)
-                
-                # Apply 2-opt improvement
-                route_customers = self._improve_route_2opt(route_customers)
-                
                 # Calculate route metrics
-                route_distance = self._calculate_route_distance(route_customers)
-                route_cost = vehicle.fixed_cost + (route_distance * vehicle.cost_per_km)
-                total_load = sum(deliveries[cid] for cid in route_customers)
+                all_ids = sorted(self.locations.keys())
+                route_distance = 0
+                
+                # Warehouse to first
+                route_distance += self.distance_matrix[0][all_ids.index(route_customers[0])]
+                
+                # Between customers
+                for i in range(len(route_customers) - 1):
+                    route_distance += self.distance_matrix[
+                        all_ids.index(route_customers[i])
+                    ][all_ids.index(route_customers[i+1])]
+                
+                # Last to warehouse
+                route_distance += self.distance_matrix[all_ids.index(route_customers[-1])][0]
+                
+                route_distance_km = route_distance / 1000.0
+                route_cost = vehicle.fixed_cost + (route_distance_km * vehicle.cost_per_km)
+                total_load = sum(route_deliveries.values())
                 
                 # Create stops
                 stops = []
                 current_time = datetime.combine(date.date(), datetime.min.time().replace(hour=8))
                 avg_speed = 50  # km/h
                 
-                prev_loc = 0  # warehouse
+                prev_loc = 0
                 for seq, cid in enumerate(route_customers, 1):
-                    # Calculate travel time
-                    dist = self.distance_matrix[(prev_loc, cid)]
-                    travel_time = timedelta(hours=dist / avg_speed)
+                    prev_idx = all_ids.index(prev_loc)
+                    curr_idx = all_ids.index(cid)
+                    dist_km = self.distance_matrix[prev_idx][curr_idx] / 1000.0
+                    travel_time = timedelta(hours=dist_km / avg_speed)
                     current_time += travel_time
                     
                     stops.append(StopResult(
                         customer_id=cid,
                         sequence=seq,
-                        quantity=deliveries[cid],
+                        quantity=round(route_deliveries[cid], 2),
                         arrival_time=current_time.strftime("%H:%M")
                     ))
                     
-                    # Add service time (15 min per stop)
                     current_time += timedelta(minutes=15)
                     prev_loc = cid
                 
@@ -224,7 +493,7 @@ class IRPSolver:
                     day=day + 1,
                     date=date.strftime("%Y-%m-%d"),
                     vehicle_id=vehicle_id,
-                    total_distance=round(route_distance, 2),
+                    total_distance=round(route_distance_km, 2),
                     total_cost=round(route_cost, 2),
                     total_load=round(total_load, 2),
                     stops=stops
@@ -234,126 +503,7 @@ class IRPSolver:
         
         return routes
     
-    def _build_vehicle_route(self, vehicle, candidates: List[int]) -> Tuple[List[int], Dict[int, float]]:
-        """
-        Build a route for a vehicle using nearest neighbor heuristic.
-        Returns list of customer IDs and delivery quantities.
-        """
-        route = []
-        deliveries = {}
-        remaining_capacity = vehicle.capacity
-        remaining_distance = vehicle.max_distance if vehicle.max_distance > 0 else float('inf')
-        current_location = 0  # warehouse
-        current_return_dist = 0
-        
-        available = set(candidates)
-        
-        while available and remaining_capacity > 0:
-            # Find nearest customer we can serve
-            best_customer = None
-            best_distance = float('inf')
-            best_cost_increase = float('inf')
-            
-            # Collect customers to remove (can't modify set during iteration)
-            to_remove = []
-            
-            for cid in available:
-                customer = self.customers[cid]
-                
-                # Calculate delivery quantity
-                delivery_qty = min(
-                    customer.max_inventory - self.inventory[cid],
-                    remaining_capacity,
-                    customer.max_inventory  # Don't over-deliver
-                )
-                
-                if delivery_qty <= 0:
-                    to_remove.append(cid)
-                    continue
-                
-                # Check if we can reach customer and return to warehouse
-                dist_to_customer = self.distance_matrix[(current_location, cid)]
-                dist_to_warehouse = self.distance_matrix[(cid, 0)]
-                
-                cost_increase = dist_to_customer + dist_to_warehouse - current_return_dist
-                
-                if cost_increase <= remaining_distance:
-                    if dist_to_customer < best_distance:
-                        best_distance = dist_to_customer
-                        best_cost_increase = cost_increase
-                        best_customer = cid
-            
-            # Remove invalid customers after iteration
-            for cid in to_remove:
-                available.discard(cid)
-            
-            if best_customer is None:
-                break
-            
-            # Add customer to route
-            customer = self.customers[best_customer]
-            delivery_qty = min(
-                customer.max_inventory - self.inventory[best_customer],
-                remaining_capacity
-            )
-            
-            route.append(best_customer)
-            deliveries[best_customer] = delivery_qty
-            remaining_capacity -= delivery_qty
-            remaining_distance -= best_cost_increase
-            current_location = best_customer
-            current_return_dist = self.distance_matrix[(best_customer, 0)]
-            available.discard(best_customer)
-        
-        return route, deliveries
-    
-    def _calculate_route_distance(self, route: List[int]) -> float:
-        """Calculate total distance for a route (warehouse -> customers -> warehouse)"""
-        if not route:
-            return 0
-        
-        distance = self.distance_matrix[(0, route[0])]  # warehouse to first
-        
-        for i in range(len(route) - 1):
-            distance += self.distance_matrix[(route[i], route[i+1])]
-        
-        distance += self.distance_matrix[(route[-1], 0)]  # last to warehouse
-        
-        return distance
-    
-    def _improve_route_2opt(self, route: List[int]) -> List[int]:
-        """Apply 2-opt improvement to reduce route distance"""
-        if len(route) <= 2:
-            return route
-        
-        improved = True
-        best_route = route.copy()
-        best_distance = self._calculate_route_distance(best_route)
-        
-        while improved:
-            improved = False
-            for i in range(len(best_route) - 1):
-                for j in range(i + 2, len(best_route)):
-                    # Create new route by reversing segment between i and j
-                    new_route = (
-                        best_route[:i+1] +
-                        best_route[i+1:j+1][::-1] +
-                        best_route[j+1:]
-                    )
-                    new_distance = self._calculate_route_distance(new_route)
-                    
-                    if new_distance < best_distance:
-                        best_route = new_route
-                        best_distance = new_distance
-                        improved = True
-                        break
-                if improved:
-                    break
-        
-        return best_route
-    
     def _update_inventory(self):
         """Update inventory levels by consuming daily demand"""
         for cid, customer in self.customers.items():
             self.inventory[cid] = max(0, self.inventory[cid] - customer.demand_rate)
-
