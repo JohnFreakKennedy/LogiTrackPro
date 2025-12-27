@@ -130,6 +130,31 @@ func setupRouter(h *handlers.Handler, cfg *config.Config) *gin.Engine {
 				plans.DELETE("/:id", h.DeletePlan)
 				plans.POST("/:id/optimize", h.OptimizePlan)
 				plans.GET("/:id/routes", h.GetPlanRoutes)
+				plans.GET("/:id/execution-stats", h.GetPlanExecutionStats)
+			}
+
+			// Route execution routes
+			routes := protected.Group("/routes")
+			{
+				routes.POST("/:id/executions", h.CreateRouteExecution)
+				routes.GET("/:id/executions", h.GetRouteExecutions)
+			}
+
+			// Execution routes
+			executions := protected.Group("/executions")
+			{
+				executions.GET("/:id", h.GetRouteExecution)
+				executions.PUT("/:id", h.UpdateRouteExecution)
+				executions.POST("/:id/start", h.StartRouteExecution)
+				executions.POST("/:id/complete", h.CompleteRouteExecution)
+			}
+
+			// Inventory snapshot routes
+			inventory := protected.Group("/inventory")
+			{
+				inventory.POST("/snapshots", h.CreateInventorySnapshot)
+				inventory.GET("/snapshots", h.GetInventorySnapshots)
+				inventory.GET("/history", h.GetInventoryHistory)
 			}
 
 			// Analytics routes

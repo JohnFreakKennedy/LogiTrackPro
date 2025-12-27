@@ -378,6 +378,8 @@ Migrations run automatically on backend startup using **GORM AutoMigrate**. The 
 
 For production deployments, consider using migration tools like `golang-migrate` or `goose` for more control over schema changes.
 
+**📊 Database Schema Documentation**: See [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) for detailed ER diagram, entity descriptions, relationships, and constraints.
+
 ## Database Layer
 
 ### GORM ORM

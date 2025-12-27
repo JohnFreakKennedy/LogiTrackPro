@@ -1,6 +1,8 @@
 package database
 
 import (
+	"errors"
+
 	"LogiTrackPro/backend/internal/models"
 
 	"gorm.io/gorm"
@@ -14,6 +16,19 @@ func GetRoutesByPlan(db *gorm.DB, planID int64) ([]models.Route, error) {
 		Order("day, id").
 		Find(&routes).Error
 	return routes, err
+}
+
+func GetRouteByID(db *gorm.DB, id int64) (*models.Route, error) {
+	route := &models.Route{}
+	err := db.Preload("Plan").Preload("Vehicle").Preload("Stops.Customer").
+		First(route, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return route, nil
 }
 
 func CreateRoute(db *gorm.DB, r *models.Route) error {
