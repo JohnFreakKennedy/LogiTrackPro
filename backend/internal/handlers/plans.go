@@ -345,3 +345,4 @@ func (h *Handler) OptimizePlan(c *gin.Context) {
 
 	successResponse(c, plan)
 }
+

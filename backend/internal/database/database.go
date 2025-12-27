@@ -47,6 +47,12 @@ func RunMigrations(db *gorm.DB) error {
 		&models.Plan{},
 		&models.Route{},
 		&models.Stop{},
+		&models.RouteExecution{},
+		&models.StopExecution{},
+		&models.InventorySnapshot{},
+		&models.Product{},
+		&models.CustomerProductInventory{},
+		&models.StopProductQuantity{},
 	)
 	if err != nil {
 		return fmt.Errorf("migration failed: %w", err)
